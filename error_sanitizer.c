@@ -14,9 +14,12 @@
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
     Author: Jakub Botwicz <j.botwicz@samsung.com>
+    Author: Mateusz Nosek <m.nosek@samsung.com>
+*/
 */
 #include "error_sanitizer.h"
 
+#ifndef RAND_VERSION
 uint8_t esan_always_succeed = 1;
 uint8_t *esan_error_bitmap = NULL;
 size_t esan_error_bitmap_size = 0;
@@ -30,7 +33,7 @@ static char *strnstr(char *s1, const char *s2, int length) {
     int len_s1 = strlen(s1);
     int len_s2 = strlen(s2);
 
-    for (int i=0; (i<len_s1-len_s2) && (i<length-len_s2); i++)
+    for (int i=0; (i<len_s1-len_s2) && (i<length-len_s2); ++i)
         if (0 == strncmp(s1+i, s2, len_s2))
             return s1+i;
 
@@ -50,12 +53,11 @@ void esan_initialize(uint8_t* bitmap_ptr, size_t bitmap_size)
     esan_error_bitmap = bitmap_ptr;
     esan_error_bitmap_size = bitmap_size;
     esan_always_succeed = 0;
-//    for (int i=0; i<ESAN_LAST_FUNCTION; ++i) 
-//        esan_nr_executions[i] = 0;
-	fprintf(stderr, "====: ErrorSanitizer: Library initialized!!\n");
-    fprintf(stderr, "====: ErrorSanitizer: esan_error_bitmap_size = %ld\n", esan_error_bitmap_size);
+    fprintf(stderr, "====: ErrorSanitizer: Library initialized!!\n");
+    fprintf(stderr, "====: ErrorSanitizer: esan_error_bitmap_size = %zu\n", esan_error_bitmap_size);
 }
 
+#endif
 void esan_fail_message(const char* function_name)
 {
     fflush(stdout);

@@ -14,6 +14,8 @@
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
     Author: Jakub Botwicz <j.botwicz@samsung.com>
+    Author: Mateusz Nosek <m.nosek@samsung.com>
+*/
 */
 #include "error_sanitizer.h"
 
@@ -55,21 +57,6 @@ void esan_print_stats(void)
     printf(" %-18s | %8ld | %15ld\n", "TOTAL ", esan_total_nr_execs, esan_all_failed_executions);
     printf("--------------------|----------|-----------------\n");
 }
-
-int esan_should_I_fail(void)
-{
-    unsigned int index_byte = esan_total_nr_execs / 8;
-    unsigned int index_bit = esan_total_nr_execs % 8;
-    esan_total_nr_execs++;
-    if (esan_always_succeed)
-        return 0;
-
-    if (index_byte >= esan_error_bitmap_size)
-        return 1;
-
-    return ((1<<index_bit) & esan_error_bitmap[index_byte]);
-}
-
 // void exit(int status);
 
 typedef void(*exit_func_t) (int status);
@@ -86,6 +73,7 @@ void exit(int status)
         (*exit_func_ptr)(status);
     else
         fprintf(stderr, "Error in dlsym - %s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
+    abort();
 }
 
 
