@@ -13,7 +13,6 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 #
-# Author: Jakub Botwicz <j.botwicz@samsung.com>
 # Author: Mateusz Nosek <m.nosek@samsung.com>
 #
 ifeq (${ESAN_PATH},)
@@ -21,40 +20,24 @@ ifeq (${ESAN_PATH},)
 endif
 
 CC ?= clang
+INCLUDE_FLAGS ?= -I${ESAN_PATH}/include
+CFLAGS = $(CFLAGS_LOCAL) ${INCLUDE_FLAGS} -Wno-unused-parameter -fPIC
 
-CFLAGS_LOCAL ?= -I${ESAN_PATH}/include
-LFLAGS_LOCAL ?= ${ESAN_PATH}/error_sanitizer.so
-
-CFLAGS  = $(CFLAGS_LOCAL) -fPIC -Wno-unused-parameter -Wno-unused-variable 
-LFLAGS  = $(LFLAGS_LOCAL)
-
-SRC     = $(wildcard *.c)
-OBJ     = $(SRC:.c=.o)
-TESTS   = $(wildcard test_*.c)
-EXEC    = $(TESTS:.c=.elf)
-RESULTS = $(TESTS:.c=.txt)
-
-DEPS    = Makefile
-
+SRC     = $(wildcard hooks_*.c) fail_common.c
+OBJ		= $(SRC:.c=.o)
 ############################################################################
 
-all: $(OBJ) $(EXEC)
+all: $(OBJ) hooks.o
 
-clean:
-	rm -f $(OBJ) $(EXEC)
-
-tests: $(RESULTS)
-
-############################################################################
-
-%.o: %.c $(DEPS)
+fail_common.o: fail_common.c
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-test_openssl.elf: test_openssl.o
-	$(CC) -o $@ $^ $(LFLAGS) -lssl -lcrypto
+hooks_%.o: hooks_%.c 
+	$(CC) -c -o $@ $< $(CFLAGS)
 
-%.elf: %.o
-	$(CC) -o $@ $^ $(LFLAGS)
+hooks.o: $(OBJ)
+	ld -r $^ -o $@
 
-%.txt: $(EXEC)
-	LD_PRELOAD=${ESAN_PATH}/error_sanitizer_preload.so ./$< esan_always_succeed.map
+clean:
+	rm -f $(OBJ) hooks.o
+

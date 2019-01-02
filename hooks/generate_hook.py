@@ -1,4 +1,4 @@
-# Copyright (c) 2018, Samsung Electronics Co., Ltd. All rights reserved.
+# Copyright (c) 2018 - 2019, Samsung Electronics Co., Ltd. All rights reserved.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,6 +14,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 #
 # Author: Jakub Botwicz <j.botwicz@samsung.com>
+# Author: Mateusz Nosek <m.nosek@samsung.com>
 #
 import sys
 import os
@@ -23,43 +24,45 @@ def generate_hook(func_definition, func_name, func_return_value, func_full_param
         'func_full_params':func_full_params, 'func_name_params':func_name_params, 'func_name_upper':func_name.upper() }
     hook = '''/* PLEASE remember to add "{func_name}" to enum ESAN_FUNCTION_NAMES in error_sanitizer_preload.c and ESAN_{func_name_upper} to enum ESAN_FUNCTIONS in error_sanitizer.h in the SAME position! */
 
-// {func_definition}
+#include "hooks_include.h"
+
+/* {func_definition} */
 
 typedef {func_return_value}(*{func_name}_func_t) {func_full_params};
 
 {func_return_value} esan_on_fail_{func_name}{func_full_params}
 {{
-    //TODO implement below action performed on failure of hooked function
-    return NULL; 
+    /* TODO implement below action performed on failure of hooked function */
+    return ({func_return_value})NULL; 
 }}
 
 {func_return_value} real_{func_name}{func_full_params}
 {{
     static {func_name}_func_t {func_name}_func_ptr = NULL;
     if (NULL == {func_name}_func_ptr)
-        {func_name}_func_ptr = dlsym(RTLD_NEXT, "{func_name}");
+        {func_name}_func_ptr = ({func_name}_func_t)dlsym(RTLD_NEXT, "{func_name}");
     if (NULL != {func_name}_func_ptr)
         return (*{func_name}_func_ptr){func_name_params};
-    else {{
-        ESAN_ERROR("Error in dlsym - %s %s:%d\\n", __FILE__, __FUNCTION__, __LINE__);
-        exit(-1);
-    }}
+
+    ESAN_ERROR("Error in dlsym - in '{func_name}' wrapper\\n");
+    exit(-1);
 }}
 
 {func_return_value} {func_name}{func_full_params}
 {{
     ESAN_DEBUG("%s %s:%d\\n", __FILE__, __FUNCTION__, __LINE__);
-    esan_nr_executions[ESAN_{func_name_upper}] += 1;
+    obj_stats[ESAN_{func_name_upper}].esan_nr_executions += 1;
     if (esan_should_I_fail()) {{
-        esan_fail_message(ESAN_FUNCTION_NAMES[ESAN_{func_name_upper}]);
-        esan_nr_failed_executions[ESAN_{func_name_upper}] += 1;
+		fail_common();
+        esan_fail_message("{func_name}");
+        obj_stats[ESAN_{func_name_upper}].esan_nr_failed_executions += 1;
         return esan_on_fail_{func_name}{func_name_params};
     }} else {{
         return real_{func_name}{func_name_params};
     }}
 }}
 
-////////////////////////////////////////////////////////////////////////////////////////
+/**************************************************************************************/
 
 '''.format(**args)
     return hook
@@ -99,7 +102,7 @@ def process_definition(definition):
 
 
 if (len(sys.argv) != 3):
-    print "Wrong number of input params\nUsage: sys.argv[0] input_file output_file"
+    print "Wrong number of input params\nUsage: %s input_file output_file" %sys.argv[0]
     sys.exit()
 
 output_file = open(sys.argv[2], 'w')

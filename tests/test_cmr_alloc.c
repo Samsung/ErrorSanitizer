@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2018, Samsung Electronics Co., Ltd. All rights reserved.
+    Copyright (c) 2018 - 2019, Samsung Electronics Co., Ltd. All rights reserved.
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -14,6 +14,7 @@
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
     Author: Jakub Botwicz <j.botwicz@samsung.com>
+    Author: Mateusz Nosek <m.nosek@samsung.com>
 */
 #include <stdint.h>
 #include <stdio.h>
@@ -23,50 +24,54 @@
 #include <assert.h>
 #include <unistd.h>
 
+#include "esan_wrapper.h"
+
 int perform_testing(uint8_t* buffer_ptr, size_t buffer_size)
 {
     {
-        char* test_malloc_buffer = malloc(100);
+        char* test_malloc_buffer = (char*)malloc(100);
         if (test_malloc_buffer) {
             test_malloc_buffer[0] = '1';
             free(test_malloc_buffer);
         }
 
-        char* test_calloc_buffer = calloc(100, 1);
+        char* test_calloc_buffer = (char*)calloc(100, 1);
         if (test_calloc_buffer) {
             test_calloc_buffer[0] = '1';
             free(test_calloc_buffer);
         }
 
-        char* test_realloc_buffer = realloc(NULL, 100);
+        char* test_realloc_buffer = (char*)realloc(NULL, 100);
         if (test_realloc_buffer) {
             test_realloc_buffer[0] = '1';
             free(test_realloc_buffer);
         }
 
-        test_realloc_buffer = realloc(NULL, 200);
+        test_realloc_buffer = (char*)realloc(NULL, 200);
         if (test_realloc_buffer) {
-            test_realloc_buffer = realloc(NULL, 300);
+            test_realloc_buffer = (char*)realloc(NULL, 300);
             if (test_realloc_buffer)
-                test_realloc_buffer = realloc(NULL, 300);
+                test_realloc_buffer = (char*)realloc(NULL, 300);
         }
         free(test_realloc_buffer);
     }
 
     {
-        char* test_malloc_buffer = malloc(100);
+        char* test_malloc_buffer = (char*)malloc(100);
         test_malloc_buffer[0] = '1';
         free(test_malloc_buffer);
 
-        char* test_calloc_buffer = calloc(100, 1);
+        char* test_calloc_buffer = (char*)calloc(100, 1);
         test_calloc_buffer[0] = '1';
         free(test_calloc_buffer);
 
-        char* test_realloc_buffer = realloc(NULL, 100);
+        char* test_realloc_buffer = (char*)realloc(NULL, 100);
         test_realloc_buffer[0] = '1';
         free(test_realloc_buffer);
     }
 
     return 1;
 }
+
+int main(int argc, char **argv) {return main0(argc, argv);}
 

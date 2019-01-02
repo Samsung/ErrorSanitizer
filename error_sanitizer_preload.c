@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2018, Samsung Electronics Co., Ltd. All rights reserved.
+    Copyright (c) 2018 - 2019, Samsung Electronics Co., Ltd. All rights reserved.
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,15 +16,11 @@
     Author: Jakub Botwicz <j.botwicz@samsung.com>
     Author: Mateusz Nosek <m.nosek@samsung.com>
 */
-*/
-#include "error_sanitizer.h"
+#include "hooks_include.h"
 
-unsigned long esan_total_nr_execs = 0;
+struct stats obj_stats[ESAN_NR_FUNCTIONS];
 
-unsigned long esan_nr_executions[ESAN_NR_FUNCTIONS];
-unsigned long esan_nr_failed_executions[ESAN_NR_FUNCTIONS];
-
-const char* const ESAN_FUNCTION_NAMES[ESAN_NR_FUNCTIONS] = {
+static const char* const ESAN_FUNCTION_NAMES[ESAN_NR_FUNCTIONS] = {
     "calloc",
     "malloc",
     "realloc",
@@ -43,37 +39,41 @@ const char* const ESAN_FUNCTION_NAMES[ESAN_NR_FUNCTIONS] = {
 
 void esan_print_stats(void)
 {
-    unsigned long esan_all_failed_executions = 0;
-    for (int i=0; i<ESAN_LAST_FUNCTION; ++i) 
-        esan_all_failed_executions += esan_nr_failed_executions[i];
+    unsigned long esan_all_failed_executions = 0, esan_all_executions = 0;
+    unsigned i;
+
     printf("\nError Sanitizer stats\n");
     printf("--------------------|----------|-----------------\n");
     printf(" %-19s|%-10s|%-17s\n", "Function ", " nr execs ", " nr failed execs ");
     printf("--------------------|----------|-----------------\n");
-    for (int i=0; i<ESAN_LAST_FUNCTION; ++i)
-        if (esan_nr_executions[i] > 0)
-            printf(" %-18s | %8ld | %15ld\n", ESAN_FUNCTION_NAMES[i], esan_nr_executions[i], esan_nr_failed_executions[i]);
+
+    for(i = 0; i < ESAN_LAST_FUNCTION; ++i) {
+        esan_all_failed_executions  += obj_stats[i].esan_nr_failed_executions;
+		esan_all_executions 		+= obj_stats[i].esan_nr_executions;
+        if (obj_stats[i].esan_nr_executions > 0)
+            printf(" %-18s | %8ld | %15ld\n", ESAN_FUNCTION_NAMES[i], obj_stats[i].esan_nr_executions, obj_stats[i].esan_nr_failed_executions);
+    }
+
     printf("--------------------|----------|-----------------\n");
-    printf(" %-18s | %8ld | %15ld\n", "TOTAL ", esan_total_nr_execs, esan_all_failed_executions);
+    printf(" %-18s | %8ld | %15ld\n", "TOTAL ", esan_all_executions, esan_all_failed_executions);
     printf("--------------------|----------|-----------------\n");
 }
-// void exit(int status);
-
+/* void exit(int status); */
 typedef void(*exit_func_t) (int status);
 
-// Wrapper for exit() function that displays ESAN stats on exit
+/* Wrapper for exit() function that displays ESAN stats on exit */
 void exit(int status)
 {
+    static exit_func_t exit_func_ptr = NULL;
+
     esan_print_stats();
 
-    static exit_func_t exit_func_ptr = NULL;
     if (NULL == exit_func_ptr)
-        exit_func_ptr = dlsym(RTLD_NEXT, "exit");
+        exit_func_ptr = (exit_func_t)dlsym(RTLD_NEXT, "exit");
     if (NULL != exit_func_ptr)
         (*exit_func_ptr)(status);
-    else
-        fprintf(stderr, "Error in dlsym - %s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
+
+    fputs("Error in dlsym - in 'exit' wrapper\n", stderr);
     abort();
 }
-
 

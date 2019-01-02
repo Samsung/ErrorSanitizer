@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2018, Samsung Electronics Co., Ltd. All rights reserved.
+    Copyright (c) 2018 - 2019, Samsung Electronics Co., Ltd. All rights reserved.
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -14,6 +14,7 @@
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
     Author: Jakub Botwicz <j.botwicz@samsung.com>
+    Author: Mateusz Nosek <m.nosek@samsung.com>
 */
 #include <stdint.h>
 #include <stdio.h>
@@ -29,6 +30,8 @@
 #include <openssl/err.h>
 #include <string.h>
 
+#include "esan_wrapper.h"
+
 void handleErrors(void)
 {
   ERR_print_errors_fp(stderr);
@@ -42,7 +45,7 @@ void calculate_hash_correct(void)
     char mess1[] = "Test Message\n";
     char mess2[] = "Hello World\n";
     unsigned char md_value[EVP_MAX_MD_SIZE];
-    int md_len, i;
+    unsigned int md_len, i;
 
     md = EVP_get_digestbyname("SHA1");
     if(!md) {
@@ -50,7 +53,7 @@ void calculate_hash_correct(void)
         exit(1);
     }
 
-    // mdctx = EVP_MD_CTX_new();
+    /* mdctx = EVP_MD_CTX_new(); */
     mdctx = EVP_MD_CTX_create();
     if (NULL == mdctx) {
         printf("EVP_MD_CTX_create : failed allocation\n");
@@ -60,11 +63,11 @@ void calculate_hash_correct(void)
     EVP_DigestUpdate(mdctx, mess1, strlen(mess1));
     EVP_DigestUpdate(mdctx, mess2, strlen(mess2));
     EVP_DigestFinal_ex(mdctx, md_value, &md_len);
-    // EVP_MD_CTX_free(mdctx);
+    /* EVP_MD_CTX_free(mdctx); */
     EVP_MD_CTX_destroy(mdctx);
 
     printf("Digest is: ");
-    for(i = 0; i < md_len; i++)
+    for(i = 0; i < md_len; ++i)
         printf("%02x", md_value[i]);
     printf("\n");
 }
@@ -78,7 +81,7 @@ void calculate_hash_incorrect(void)
     char mess1[] = "Test Message\n";
     char mess2[] = "Hello World\n";
     unsigned char md_value[EVP_MAX_MD_SIZE];
-    int md_len, i;
+    unsigned int md_len, i;
 
     md = EVP_get_digestbyname("SHA1");
     if(!md) {
@@ -86,17 +89,17 @@ void calculate_hash_incorrect(void)
         exit(1);
     }
 
-    // mdctx = EVP_MD_CTX_new();
+    /* mdctx = EVP_MD_CTX_new(); */
     mdctx = EVP_MD_CTX_create();
     EVP_DigestInit_ex(mdctx, md, NULL);
     EVP_DigestUpdate(mdctx, mess1, strlen(mess1));
     EVP_DigestUpdate(mdctx, mess2, strlen(mess2));
     EVP_DigestFinal_ex(mdctx, md_value, &md_len);
-    // EVP_MD_CTX_free(mdctx);
+    /* EVP_MD_CTX_free(mdctx); */
     EVP_MD_CTX_destroy(mdctx);
 
     printf("Digest is: ");
-    for(i = 0; i < md_len; i++)
+    for(i = 0; i < md_len; ++i)
         printf("%02x", md_value[i]);
     printf("\n");
 }
@@ -165,14 +168,14 @@ int perform_testing(uint8_t* buffer_ptr, size_t buffer_size)
 {
     OpenSSL_add_all_algorithms();
 
-    // correct usage with error handling
+    /* correct usage with error handling */
     {
         test_aes(encrypt_correct);
         calculate_hash_correct();
     }
     printf("\nCorrect usage test finished!!!\n\n");
 
-    // incorrect usage without error handling
+    /* incorrect usage without error handling */
     {
         test_aes(encrypt_incorrect);
         calculate_hash_incorrect();
@@ -181,4 +184,6 @@ int perform_testing(uint8_t* buffer_ptr, size_t buffer_size)
 
     return 1;
 }
+
+int main(int argc, char **argv) {return main0(argc, argv);}
 

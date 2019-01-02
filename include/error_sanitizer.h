@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2018, Samsung Electronics Co., Ltd. All rights reserved.
+    Copyright (c) 2018 - 2019, Samsung Electronics Co., Ltd. All rights reserved.
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -14,22 +14,35 @@
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
     Author: Jakub Botwicz <j.botwicz@samsung.com>
+    Author: Mateusz Nosek <m.nosek@samsung.com>
 */
-#ifndef	_ERROR_SANITIZER_LOCAL_H
-#define	_ERROR_SANITIZER_LOCAL_H
+#ifndef	_ERROR_SANITIZER_H
+#define	_ERROR_SANITIZER_H
 
-#include "error_sanitizer.h"
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
 
-extern unsigned long esan_all_nr_executions;
+#include "esan_internals.h"
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
 
-extern unsigned long esan_nr_executions[ESAN_NR_FUNCTIONS];
-extern unsigned long esan_nr_failed_executions[ESAN_NR_FUNCTIONS];
+#ifndef FAIL_CHANCE
+extern uint8_t esan_always_succeed;
+extern uint8_t *esan_error_bitmap;
+extern size_t esan_error_bitmap_size;
 
-extern const char* const ESAN_FUNCTION_NAMES[ESAN_NR_FUNCTIONS];
+uint8_t* esan_split_input_file(uint8_t* data, size_t size);
+void esan_initialize(uint8_t* bitmap_ptr, size_t bitmap_size);
+#endif
 
-int esan_should_I_fail(void);
-
+#ifdef DEBUG
 #define ESAN_DEBUG(...) fprintf(stdout, "====: ErrorSanitizer: DBG: " __VA_ARGS__)
+#else
+#define ESAN_DEBUG(...) 
+#endif
+
 #define ESAN_ERROR(...) fprintf(stderr, "====: ErrorSanitizer: " __VA_ARGS__)
 
-#endif // #ifndef	_ERROR_SANITIZER_LOCAL_H
+#endif /* _ERROR_SANITIZER_H */ 

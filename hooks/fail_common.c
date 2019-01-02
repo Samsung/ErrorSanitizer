@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2018, Samsung Electronics Co., Ltd. All rights reserved.
+    Copyright (c) 2018 - 2019, Samsung Electronics Co., Ltd. All rights reserved.
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,25 +15,15 @@
 
     Author: Mateusz Nosek <m.nosek@samsung.com>
 */
-#ifndef RAND_VERSION
-#include "error_sanitizer.h"
+#include"attributes.h"
+#include"hooks_include.h"
 
-extern unsigned long esan_total_nr_execs;
-
-int esan_should_I_fail(void)
+always_inline
+void fail_common(void)
 {
-    unsigned int index_byte = esan_total_nr_execs / 8;
-    unsigned int index_bit = esan_total_nr_execs % 8;
-    ++esan_total_nr_execs;
+	void *x;
 
-    if (esan_always_succeed)
-        return 0;
-
-    if (index_byte >= esan_error_bitmap_size)
-        return 1;
-
-    return ((1<<index_bit) & esan_error_bitmap[index_byte]);
-
+	x = __builtin_return_address(0);
+	fprintf(stderr, "return address: %p\n", x);
 }
-#endif
 

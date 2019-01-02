@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2018, Samsung Electronics Co., Ltd. All rights reserved.
+    Copyright (c) 2018 - 2019, Samsung Electronics Co., Ltd. All rights reserved.
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -14,23 +14,12 @@
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
     Author: Jakub Botwicz <j.botwicz@samsung.com>
+    Author: Mateusz Nosek <m.nosek@samsung.com>
 */
-#ifndef	_ERROR_SANITIZER_H
-#define	_ERROR_SANITIZER_H
+#ifndef ESAN_INTERNALS_H_
+#define ESAN_INTERNALS_H_
 
-#define _GNU_SOURCE
-#include <dlfcn.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <errno.h>
-
-extern uint8_t esan_always_succeed;
-extern uint8_t *esan_error_bitmap;
-extern size_t esan_error_bitmap_size;
-
-enum ESAN_FUNCTIONS {
+ enum ESAN_FUNCTIONS {
     ESAN_CALLOC,
     ESAN_MALLOC,
     ESAN_REALLOC,
@@ -45,14 +34,20 @@ enum ESAN_FUNCTIONS {
     ESAN_FTELLO,
     ESAN_EVP_CIPHER_CTX_NEW,
     ESAN_EVP_MD_CTX_CREATE,
-    ESAN_LAST_FUNCTION,  // End marker.
-    ESAN_NR_FUNCTIONS  // Counts how many functions are defined.
+    ESAN_LAST_FUNCTION,  /* End marker. */
+    ESAN_NR_FUNCTIONS  /* Counts how many functions are defined. */
 };
 
-uint8_t* esan_split_input_file(uint8_t* data, size_t size);
+typedef struct stats
+{
+    unsigned long esan_nr_executions;
+    unsigned long esan_nr_failed_executions;
+} stats;
 
-void esan_initialize(uint8_t* bitmap_ptr, size_t bitmap_size);
+extern struct stats obj_stats[ESAN_NR_FUNCTIONS];
 
-void esan_fail_message(const char* function_name);
+int esan_should_I_fail(void);
+void esan_fail_message(const char *function_name);
+void fail_common(void);
 
-#endif // #ifndef	_ERROR_SANITIZER_H
+#endif /* ESAN_INTERNALS_H_ */
