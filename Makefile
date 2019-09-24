@@ -20,13 +20,14 @@ ESAN_PATH = $(shell pwd)
 TEST_PATH = ${ESAN_PATH}/tests
 HOOK_PATH = ${ESAN_PATH}/hooks
 
-FAIL_CHANCE ?= 70;
+FAIL_CHANCE ?= 70
 CC ?= clang
 
 INCLUDE_FLAGS = -I${ESAN_PATH}/include
 CFLAGS = $(CFLAGS_LOCAL) ${INCLUDE_FLAGS} -fPIC -Wall -Wextra -Werror
 LFLAGS = $(LFLAGS_LOCAL)
-CFLAGS_LIB = -fPIC -shared -ldl ${INCLUDE_FLAGS}
+CFLAGS_LIB = -fPIC ${INCLUDE_FLAGS}
+LFLAGS_LIB = -shared -ldl
 
 PRELOAD_SRC     = error_sanitizer_preload.c in_library.c sanitizer_fail.c
 PRELOAD_OBJ		= $(PRELOAD_SRC:.c=.o) ${HOOK_PATH}/hooks.o
@@ -47,13 +48,13 @@ run: ev
 ev: hook $(LIBS) test
 
 error_sanitizer.so:
-	$(CC) $(CFLAGS_LIB) -o $@ error_sanitizer.c -Wall -Wextra
+	$(CC) $(CFLAGS_LIB) -o $@ error_sanitizer.c -Wall -Wextra $(LFLAGS_LIB)
 
 error_sanitizer_preload.so: error_sanitizer.so $(PRELOAD_OBJ)
-	$(CC) $(CFLAGS_LIB) -o $@ $(PRELOAD_OBJ)
+	$(CC) $(CFLAGS_LIB) -o $@ $(PRELOAD_OBJ) $(LFLAGS_LIB)
 
 error_sanitizer_RAND.so: $(PRELOAD_OBJ_RAND)
-	$(CC) $(CFLAGS_LIB) -o $@ $(PRELOAD_OBJ_RAND) -DFAIL_CHANCE=$(FAIL_CHANCE)
+	$(CC) $(CFLAGS_LIB) -o $@ $(PRELOAD_OBJ_RAND) -DFAIL_CHANCE=$(FAIL_CHANCE) $(LFLAGS_LIB)
 
 
 clean: hook_clean test_clean

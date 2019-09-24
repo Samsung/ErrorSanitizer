@@ -13,7 +13,6 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
-    Author: Jakub Botwicz <j.botwicz@samsung.com>
     Author: Mateusz Nosek <m.nosek@samsung.com>
 */
 #include <stdint.h>
@@ -21,20 +20,29 @@
 #include <stdlib.h>
 
 #include "esan_wrapper.h"
+#define FPUTS_NUMBER 100
 
-int perform_testing(uint8_t *buffer_ptr, size_t buffer_size)
+int perform_testing(uint8_t* buffer_ptr, size_t buffer_size)
 {
 	(void)buffer_ptr;
 	(void)buffer_size;
+	unsigned i;
     FILE *pFile;
     long lSize;
     char *buffer;
     size_t result;
     int int_result;
 
-    pFile = fopen ("Makefile" , "rb");
+    pFile = fopen ("/tmp/esan_fputs_tmp.txt" , "w+");
     if (pFile==NULL) {printf ("File error"); exit (1);}
     printf("fopen - SUCCESS!\n");
+
+	for(i = 0;i < FPUTS_NUMBER;++i) {
+		int_result = fputs("ab", pFile);
+		if(int_result < 0)
+			printf("fputs - FAILED");
+	}
+	printf("fputs - loop SUCCESS\n");
 
     /* obtain file size: */
     int_result = fseeko(pFile , 0 , SEEK_END);
@@ -46,8 +54,6 @@ int perform_testing(uint8_t *buffer_ptr, size_t buffer_size)
     if (fseeko(pFile, 0L, SEEK_SET) != 0) {
         fprintf (stderr, "fseeko error"); exit (1);
     }
-    rewind (pFile);
-    printf("rewind - SUCCESS!\n");
 
     /* allocate memory to contain the whole file: */
     buffer = (char*) malloc (sizeof(char)*lSize);
@@ -58,47 +64,25 @@ int perform_testing(uint8_t *buffer_ptr, size_t buffer_size)
     result = fread (buffer,1,lSize,pFile);
     printf("fread - SUCCESS!\n");
     if (result != (size_t)lSize) {printf ("Reading error"); exit (3);}
-
     /* the whole file is now loaded in the memory buffer. */
 
     /* terminate */
     int_result = fclose (pFile);
     if (int_result) {printf ("fclose error"); exit (1);}
     printf("fclose - SUCCESS!\n");
-    free (buffer);
-    printf("free - SUCCESS!\n");
 
-    pFile = fopen ( "Makefile" , "rb" );
-    printf("fopen - SUCCESS!\n");
-
-    /* obtain file size: */
-    fseek (pFile , 0 , SEEK_END);
-    printf("fseek - SUCCESS!\n");
-    lSize = ftell (pFile);
-    printf("ftell - SUCCESS!\n");
-    rewind (pFile);
-    printf("rewind - SUCCESS!\n");
-
-    /* allocate memory to contain the whole file: */
-    buffer = (char*) malloc (sizeof(char)*lSize);
-    printf("malloc - SUCCESS!\n");
-
-    /* copy the file into the buffer: */
-    result = fread (buffer,1,lSize,pFile);
-    printf("fread - SUCCESS!\n");
-
-    /* the whole file is now loaded in the memory buffer. */
-
-    /* terminate */
-    fclose (pFile);
-    printf("fclose - SUCCESS!\n");
+	for(i = 0;i < FPUTS_NUMBER;++i) {
+		if(buffer[i<<1] != 'a' || buffer[(i<<1) + 1] != 'b')
+			printf("check error!!!!\n");
+	}
+	printf("check loop SUCCESS1\n");
     free (buffer);
     printf("free - SUCCESS!\n");
 
     return 0;
 }
 
-int main(int argc, char **argv)
+int main(int argc, char **argv) 
 {
 	return main0(argc, argv);
 }

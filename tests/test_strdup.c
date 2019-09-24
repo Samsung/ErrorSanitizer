@@ -26,18 +26,20 @@
 
 #include "esan_wrapper.h"
 
-int perform_testing(uint8_t* buffer_ptr, size_t buffer_size)
+int perform_testing(uint8_t *buffer_ptr, size_t buffer_size)
 {
+	(void)buffer_ptr;
+	(void)buffer_size;
     /* correct usage with error handling */
     {
-        char* test_strdup = strdup("asdads");
+        char *test_strdup = strdup("asdads");
         if (test_strdup) {
             printf("strdup!! %p %s \n", test_strdup, test_strdup);
             test_strdup[0] = '1';
             free(test_strdup);
         }
 
-        char* test_strndup = strndup("asdads", 7);
+        char *test_strndup = strndup("asdads", 7);
         if (test_strndup) {
             printf("strndup!! %p %s \n", test_strdup, test_strdup);
             test_strndup[0] = '1';
@@ -47,11 +49,11 @@ int perform_testing(uint8_t* buffer_ptr, size_t buffer_size)
 
     /* incorrect usage without error handling */
     {
-        char* test_strdup = strdup("asdads");
+        char *test_strdup = strdup("asdads");
         printf("strdup!! %p %s \n", test_strdup, test_strdup);
         test_strdup[0] = '1';
 
-        char* test_strndup = strndup("asdads", 7);
+        char *test_strndup = strndup("asdads", 7);
         printf("strndup!! %p %s \n", test_strdup, test_strdup);
         test_strndup[0] = '1';
 
@@ -62,5 +64,8 @@ int perform_testing(uint8_t* buffer_ptr, size_t buffer_size)
     return 1;
 }
 
-int main(int argc, char **argv) {return main0(argc, argv);}
+int main(int argc, char **argv)
+{
+	return main0(argc, argv);
+}
 

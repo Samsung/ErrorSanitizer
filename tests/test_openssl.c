@@ -152,9 +152,9 @@ int test_aes(encrypt_func_ptr_t encrypt_func_ptr)
     unsigned char *plaintext =
                 (unsigned char *)"The quick brown fox jumps over the lazy dog";
     unsigned char ciphertext[128];
-    unsigned char decryptedtext[128];
+    /* unsigned char decryptedtext[128]; */
 
-    int decryptedtext_len, ciphertext_len;
+    int /* decryptedtext_len, */ ciphertext_len;
 
     ciphertext_len = encrypt_func_ptr(plaintext, strlen ((char *)plaintext), key, iv,
                             ciphertext);
@@ -164,8 +164,10 @@ int test_aes(encrypt_func_ptr_t encrypt_func_ptr)
     return 0;
 }
 
-int perform_testing(uint8_t* buffer_ptr, size_t buffer_size)
+int perform_testing(uint8_t *buffer_ptr, size_t buffer_size)
 {
+	(void)buffer_ptr;
+	(void)buffer_size;
     OpenSSL_add_all_algorithms();
 
     /* correct usage with error handling */
@@ -185,5 +187,8 @@ int perform_testing(uint8_t* buffer_ptr, size_t buffer_size)
     return 1;
 }
 
-int main(int argc, char **argv) {return main0(argc, argv);}
+int main(int argc, char **argv)
+{
+	return main0(argc, argv);
+}
 

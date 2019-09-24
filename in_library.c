@@ -23,8 +23,8 @@ struct range {
 };
 static struct range libraries[MAX_LIBS];
 
-void esan_write_syscall(const char *c);
-void esan_exit_syscall(void);
+void esan_write_syscall(const char *c) {(void)c;}
+void esan_exit_syscall(void) {}
 
 static void esan_maps_parse_error(void)
 {

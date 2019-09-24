@@ -79,7 +79,6 @@ inline static int main0(int argc, char* argv[])
 {
     uint8_t *buff_ptr, *esan_bitmap, *test_buff_ptr = NULL;
     size_t buff_size = 0, test_buff_size = 0;
-	int i = 0;
 
 	if(argc != 2)
 		exit_print("Wrong number of arguments.  Expected 1 argument - file path!\n", -1);

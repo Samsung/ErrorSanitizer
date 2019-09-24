@@ -15,8 +15,10 @@ static int internal_fail(void);
 
 int esan_should_I_fail(void)
 {
+	/*
 	if(in_library(NULL))
 		return 0;
+	*/
 	return internal_fail();
 }
 
@@ -32,6 +34,7 @@ static int internal_fail(void)
     if (esan_always_succeed)
         return 0;
 
+	/* fail if map is to short, not to let afl cut the input */
     if (index_byte >= esan_error_bitmap_size)
         return 1;
 

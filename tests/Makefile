@@ -25,7 +25,7 @@ CC ?= clang
 CFLAGS_LOCAL ?= -I${ESAN_PATH}/include
 LFLAGS_LOCAL ?= ${ESAN_PATH}/error_sanitizer.so
 
-CFLAGS  = $(CFLAGS_LOCAL) -fPIC -Wno-unused-parameter -Wno-unused-variable 
+CFLAGS  = $(CFLAGS_LOCAL) -fPIC
 LFLAGS  = $(LFLAGS_LOCAL)
 
 SRC     = $(wildcard *.c)
@@ -56,5 +56,5 @@ test_openssl.elf: test_openssl.o
 %.elf: %.o
 	$(CC) -o $@ $^ $(LFLAGS)
 
-%.txt: $(EXEC)
+%.txt: %.elf
 	LD_PRELOAD=${ESAN_PATH}/error_sanitizer_preload.so ./$< esan_always_succeed.map

@@ -20,6 +20,6 @@
 
 #define always_inline inline __attribute__((__always_inline__))
 #define noinline __attribute__((__noinline__))
-
+#define constructor __attribute__((constructor))
 
 #endif
