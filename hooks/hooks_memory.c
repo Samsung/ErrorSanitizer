@@ -27,6 +27,10 @@ typedef void *(*calloc_func_t)(size_t num, size_t size);
 
 void *real_calloc(size_t num, size_t size)
 {
+	void *tmp;
+	posix_memalign(&tmp, 64, num * size);
+	return tmp;
+	/*
 	static calloc_func_t calloc_func_ptr = NULL;
 	if (NULL == calloc_func_ptr)
 		calloc_func_ptr = (calloc_func_t)dlsym(RTLD_NEXT, "calloc");
@@ -35,6 +39,7 @@ void *real_calloc(size_t num, size_t size)
 
 	ESAN_ERROR("Error in dlsym - in 'calloc' wrapper\n");
 	exit(-1);
+	*/
 }
 
 void *calloc(size_t num, size_t size)
