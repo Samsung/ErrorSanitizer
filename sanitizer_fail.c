@@ -1,13 +1,32 @@
+/*
+    Copyright (c) 2018 - 2019, Samsung Electronics Co., Ltd. All rights reserved.
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; version 2 of the License.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
+
+    Author: Ernest Borowski <e.borowski@samsung.com>
+    Author: Mateusz Nosek <m.nosek@samsung.com>
+*/
 #include "error_sanitizer.h"
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
-void esan_fail_message(const char* function_name)
+void esan_fail_message(const char *function_name)
 {
-    fflush(stdout);
-    fprintf(stderr, "====: ErrorSanitizer: Injected failure at %s\n", function_name);
+	fflush(stdout);
+	fprintf(stderr, "====: ErrorSanitizer: Injected failure at %s\n",
+		function_name);
 }
 
 extern int in_library(const void *addr);
@@ -16,9 +35,9 @@ static int internal_fail(void);
 int esan_should_I_fail(void)
 {
 	/*
-	if(in_library(NULL))
-		return 0;
-	*/
+  if(in_library(NULL))
+          return 0;
+  */
 	return internal_fail();
 }
 
@@ -27,18 +46,18 @@ static unsigned long esan_total_execs = 0;
 #ifndef FAIL_CHANCE
 static int internal_fail(void)
 {
-    unsigned int index_byte = esan_total_execs / 8;
-    unsigned int index_bit = esan_total_execs % 8;
-    ++esan_total_execs;
+	unsigned int index_byte = esan_total_execs / 8;
+	unsigned int index_bit = esan_total_execs % 8;
+	++esan_total_execs;
 
-    if (esan_always_succeed)
-        return 0;
+	if (esan_always_succeed)
+		return 0;
 
 	/* fail if map is to short, not to let afl cut the input */
-    if (index_byte >= esan_error_bitmap_size)
-        return 1;
+	if (index_byte >= esan_error_bitmap_size)
+		return 1;
 
-    return ((1 << index_bit) & esan_error_bitmap[index_byte]);
+	return ((1 << index_bit) & esan_error_bitmap[index_byte]);
 }
 #else
 
@@ -58,32 +77,32 @@ static int random_fail(long fail_chance)
 
 static void initialize(void)
 {
-	char* env;
-    if (!initialized){
+	char *env;
+	if (!initialized) {
 		++initialized;
-    	srand(time(0));
+		srand(time(0));
 		env = getenv("ESAN_FAIL_CHANCE");
-		if(env != NULL)
+		if (env != NULL)
 			fail_chance = strtol(env, NULL, 0) % 101;
 		env = getenv("ESAN_SKIP_FIRST");
-		if(env != NULL)
+		if (env != NULL)
 			safe_first = strtoul(env, NULL, 0);
-    }
+	}
 }
 
 static int internal_fail(void)
 {
 	initialize();
-    if (safe_first > 0){
+	if (safe_first > 0) {
 		fprintf(stderr, "%lu\n", safe_first);
 		--safe_first;
 		return 0;
-    }
-    ++esan_total_execs;
+	}
+	++esan_total_execs;
 
-    if (esan_total_execs > (ULONG_MAX >> 4))
-        return 1;
+	if (esan_total_execs > (ULONG_MAX >> 4))
+		return 1;
 
-    return random_fail(fail_chance);
+	return random_fail(fail_chance);
 }
 #endif

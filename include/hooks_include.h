@@ -13,23 +13,24 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
+    Author: Ernest Borowski <e.borowski@samsung.com>
     Author: Jakub Botwicz <j.botwicz@samsung.com>
     Author: Mateusz Nosek <m.nosek@samsung.com>
 */
 #ifndef HOOKS_INCLUDE_H_
 #define HOOKS_INCLUDE_H_
 
-#include "esan_internals.h"
 #include "error_sanitizer.h"
+#include "esan_internals.h"
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #include <dlfcn.h>
-#include <stdlib.h>
-#include <string.h>
+#include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <errno.h>
+#include <stdlib.h>
+#include <string.h>
 
 #endif

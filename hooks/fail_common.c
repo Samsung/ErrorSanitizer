@@ -13,17 +13,16 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
+    Author: Ernest Borowski <e.borowski@samsung.com>
     Author: Mateusz Nosek <m.nosek@samsung.com>
 */
-#include"attributes.h"
-#include"hooks_include.h"
+#include "attributes.h"
+#include "hooks_include.h"
 
-always_inline
-void fail_common(void)
+always_inline void fail_common(void)
 {
 	void *x;
 
 	x = __builtin_return_address(0);
 	fprintf(stderr, "return address: %p\n", x);
 }
-
