@@ -51,7 +51,8 @@ if [ "$CI_ENABLED" == "__TRUE__" ]; then # just check syntax
 	python run-clang-format.py --clang-format-executable=/usr/bin/clang-format -r ./
 else
 	while IFS= read -r -d '' f; do
-		if [ "$f:2" == ".h" ] || [ "$f:2" == ".c" ] || [ "$f:4" == ".hpp" ] || [ "$f:4" == ".cpp" ]; then
+		if [ "${f: -2}" == ".h" ] || [ "${f: -2}" == ".c" ] || [ "${f: -4}" == ".hpp" ] || \
+			[ "${f: -4}" == ".cpp" ]; then
 			clang-format -i "$f"
 		fi
 	done < <(git ls-files -z)
