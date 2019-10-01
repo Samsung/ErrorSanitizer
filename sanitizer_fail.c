@@ -30,7 +30,7 @@ void esan_fail_message(const char *function_name)
 }
 
 extern int in_library(const void *addr);
-static int internal_fail(void);
+static unsigned int internal_fail(void);
 
 int esan_should_I_fail(void)
 {
@@ -38,16 +38,17 @@ int esan_should_I_fail(void)
   if(in_library(NULL))
           return 0;
   */
-	return internal_fail();
+	return !!(internal_fail());
 }
 
 static unsigned long esan_total_execs = 0;
 
 #ifndef FAIL_CHANCE
-static int internal_fail(void)
+#define BITS_PER_BYTE 8
+static unsigned int internal_fail(void)
 {
-	unsigned int index_byte = esan_total_execs / 8;
-	unsigned int index_bit = esan_total_execs % 8;
+	unsigned int index_byte = esan_total_execs / BITS_PER_BYTE;
+	unsigned int index_bit = esan_total_execs % BITS_PER_BYTE;
 	++esan_total_execs;
 
 	if (esan_always_succeed)
@@ -57,7 +58,7 @@ static int internal_fail(void)
 	if (index_byte >= esan_error_bitmap_size)
 		return 1;
 
-	return ((1 << index_bit) & esan_error_bitmap[index_byte]);
+	return ((1U << index_bit) & esan_error_bitmap[index_byte]);
 }
 #else
 
@@ -69,9 +70,10 @@ static unsigned long safe_first = 0;
 static long fail_chance = FAIL_CHANCE;
 static unsigned initialized = 0;
 
+#define MAX_PERCENT_GRANUALITY 100
 static int random_fail(long fail_chance)
 {
-	long random = rand() % 100;
+	long random = rand() % MAX_PERCENT_GRANUALITY;
 	return random < fail_chance;
 }
 
@@ -83,14 +85,15 @@ static void initialize(void)
 		srand(time(0));
 		env = getenv("ESAN_FAIL_CHANCE");
 		if (env != NULL)
-			fail_chance = strtol(env, NULL, 0) % 101;
+			fail_chance = strtol(env, NULL, 0) %
+				      (MAX_PERCENT_GRANUALITY + 1);
 		env = getenv("ESAN_SKIP_FIRST");
 		if (env != NULL)
 			safe_first = strtoul(env, NULL, 0);
 	}
 }
 
-static int internal_fail(void)
+static unsigned int internal_fail(void)
 {
 	initialize();
 	if (safe_first > 0) {
@@ -100,7 +103,7 @@ static int internal_fail(void)
 	}
 	++esan_total_execs;
 
-	if (esan_total_execs > (ULONG_MAX >> 4))
+	if (esan_total_execs > (ULONG_MAX >> 4U))
 		return 1;
 
 	return random_fail(fail_chance);

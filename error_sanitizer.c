@@ -25,7 +25,7 @@ uint8_t *esan_error_bitmap = NULL;
 size_t esan_error_bitmap_size = 0;
 
 const char SPLIT_STRING[] = "XXXX";
-static int const_strlen(const char *str)
+static long const_strlen(const char *str)
 {
 	const char *cp = str;
 	while (*str++ != '\0')
@@ -54,10 +54,10 @@ static char *strnstr(char *s1, const char *s2, int length)
 	if (s1 == NULL || s2 == NULL)
 		return NULL;
 
-	int len_s1 = const_strlen(s1);
-	int len_s2 = const_strlen(s2);
+	long len_s1 = const_strlen(s1);
+	long len_s2 = const_strlen(s2);
 
-	for (int i = 0; (i < len_s1 - len_s2) && (i < length - len_s2); ++i) {
+	for (long i = 0; (i < len_s1 - len_s2) && (i < length - len_s2); ++i) {
 		if (0 == strncmp(s1 + i, s2, len_s2))
 			return s1 + i;
 	}

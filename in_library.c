@@ -75,6 +75,7 @@ static void esan_skip_whitespaces(void)
 		esan_next_char();
 }
 
+#define CONST_TEN 10 /* remove warnings */
 static unsigned long esan_parse_hex_number(void)
 {
 	unsigned long ret = 0;
@@ -84,8 +85,8 @@ static unsigned long esan_parse_hex_number(void)
 		if (c >= '0' && c <= '9')
 			c = c - '0';
 		else
-			c = c - 'a' + 10;
-		ret = (ret << 4) + c; // TODO check overflow
+			c = c - 'a' + CONST_TEN;
+		ret = (ret << 4U) + c; // TODO check overflow
 		esan_next_char();
 	}
 
@@ -260,12 +261,7 @@ void esan_next_char()
 int maps_open()
 {
 	(void)path;
-	long tmp;
-	asm volatile("syscall\t\n"
-		     : "=a"(tmp)
-		     : "a"(123), "D"(path), "S"(0), "d"(0)
-		     :);
-	return tmp;
+	return -1;
 }
 long esan_read(int fd, void *buf, unsigned long size)
 {
