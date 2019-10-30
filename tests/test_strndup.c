@@ -14,32 +14,23 @@
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
     Author: Ernest Borowski <e.borowski@samsung.com>
-    Author: Mateusz Nosek <m.nosek@samsung.com>
 */
 #include "esan_wrapper.h"
-#define FPUTS_ITERATION_COUNT 100
+#include <string.h>
 
-// TODO: unify msg name conventions
 int perform_testing(const uint8_t *buffer_ptr, size_t buffer_size)
 {
 	(void)buffer_ptr;
 	(void)buffer_size;
-	unsigned fputs_it;
-	FILE *pFile;
+	char test_string[] = "strndup_test_string";
 
-	pFile = fopen("fputs.test", "wb");
-	if (pFile == NULL)
-		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
-			     "fopen FAILED.");
-
-	for (fputs_it = 0; fputs_it < FPUTS_ITERATION_COUNT; ++fputs_it) {
-		if (fputs("ab", pFile) < 0) {
-			fclose(pFile);
-			exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
-				     "fputs FAILED.");
-		}
+	char *test_strndup = strndup(test_string, sizeof(test_string));
+	if (test_strndup) {
+		test_strndup[0] = '1';
+		free(test_strndup);
+	} else {
+		exit_failure(ESAN_TESTS_INTERNAL_ERROR, "strndup FAILED.");
 	}
-	fclose(pFile);
 	return 0;
 }
 

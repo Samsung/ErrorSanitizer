@@ -33,10 +33,11 @@
 
 #include "esan_wrapper.h"
 
+#define CIPHER_TEXT_SIZE 128
 void handleErrors(void)
 {
 	ERR_print_errors_fp(stderr);
-	exit(-5);
+	exit(ESAN_TESTS_INTERNAL_ERROR);
 }
 
 void calculate_hash_correct(void)
@@ -75,6 +76,8 @@ void calculate_hash_correct(void)
 
 void calculate_hash_incorrect(void)
 {
+	// External library
+	// NOLINTNEXTLINE(hicpp-signed-bitwise)
 	OpenSSL_add_all_algorithms();
 
 	EVP_MD_CTX *mdctx;
@@ -159,23 +162,25 @@ int test_aes(encrypt_func_ptr_t encrypt_func_ptr)
 	unsigned char *iv = (unsigned char *)"0123456789012345";
 	unsigned char *plaintext =
 		(unsigned char *)"The quick brown fox jumps over the lazy dog";
-	unsigned char ciphertext[128];
+	unsigned char ciphertext[CIPHER_TEXT_SIZE];
 	/* unsigned char decryptedtext[128]; */
 
 	int /* decryptedtext_len, */ ciphertext_len;
 
-	ciphertext_len = encrypt_func_ptr(plaintext, strlen((char *)plaintext),
-					  key, iv, ciphertext);
+	ciphertext_len = encrypt_func_ptr(
+		plaintext, (int)strlen((char *)plaintext), key, iv, ciphertext);
 
 	printf("Ciphertext is:\n");
 	BIO_dump_fp(stdout, (const char *)ciphertext, ciphertext_len);
 	return 0;
 }
 
-int perform_testing(uint8_t *buffer_ptr, size_t buffer_size)
+int perform_testing(const uint8_t *buffer_ptr, size_t buffer_size)
 {
 	(void)buffer_ptr;
 	(void)buffer_size;
+	// External library
+	// NOLINTNEXTLINE(hicpp-signed-bitwise)
 	OpenSSL_add_all_algorithms();
 
 	/* correct usage with error handling */

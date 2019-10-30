@@ -26,55 +26,89 @@
 #include <unistd.h>
 
 #include "esan_wrapper.h"
-
-int perform_testing(uint8_t *buffer_ptr, size_t buffer_size)
+#define TEST_MEMORY_SIZE 100
+//TODO: what about exiting on failure and printing error msg
+int perform_testing(const uint8_t *buffer_ptr, size_t buffer_size)
 {
 	(void)buffer_ptr;
 	(void)buffer_size;
 	{
-		char *test_malloc_buffer = (char *)malloc(100);
+		char *test_malloc_buffer = (char *)malloc(TEST_MEMORY_SIZE);
 		if (test_malloc_buffer) {
 			test_malloc_buffer[0] = '1';
 			free(test_malloc_buffer);
+		} else {
+			exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
+				     "malloc FAILED.");
 		}
 
-		char *test_calloc_buffer = (char *)calloc(100, 1);
+		char *test_calloc_buffer = (char *)calloc(TEST_MEMORY_SIZE, 1);
 		if (test_calloc_buffer) {
 			test_calloc_buffer[0] = '1';
 			free(test_calloc_buffer);
+		} else {
+			exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
+				     "calloc FAILED.");
 		}
 
-		char *test_realloc_buffer = (char *)realloc(NULL, 100);
+		char *test_realloc_buffer =
+			(char *)realloc(NULL, TEST_MEMORY_SIZE);
 		if (test_realloc_buffer) {
 			test_realloc_buffer[0] = '1';
 			free(test_realloc_buffer);
+		} else {
+			exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
+				     "realloc FAILED.");
 		}
 
-		test_realloc_buffer = (char *)realloc(NULL, 200);
+		test_realloc_buffer =
+			(char *)realloc(NULL, 2 * TEST_MEMORY_SIZE);
 		if (test_realloc_buffer) {
-			test_realloc_buffer = (char *)realloc(NULL, 300);
-			if (test_realloc_buffer)
+			test_realloc_buffer = (char *)realloc(
+				test_realloc_buffer, 3 * TEST_MEMORY_SIZE);
+			if (test_realloc_buffer) {
 				test_realloc_buffer =
-					(char *)realloc(NULL, 300);
+					(char *)realloc(test_realloc_buffer,
+							3 * TEST_MEMORY_SIZE);
+			} else {
+				exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
+					     "realloc FAILED.");
+			}
+			free(test_realloc_buffer);
 		}
-		free(test_realloc_buffer);
 	}
 
 	{
-		char *test_malloc_buffer = (char *)malloc(100);
-		test_malloc_buffer[0] = '1';
-		free(test_malloc_buffer);
+		char *test_malloc_buffer = (char *)malloc(TEST_MEMORY_SIZE);
+		if (test_malloc_buffer) {
+			test_malloc_buffer[0] = '1';
+			free(test_malloc_buffer);
+		} else {
+			exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
+				     "malloc FAILED.");
+		}
 
-		char *test_calloc_buffer = (char *)calloc(100, 1);
-		test_calloc_buffer[0] = '1';
-		free(test_calloc_buffer);
+		char *test_calloc_buffer = (char *)calloc(TEST_MEMORY_SIZE, 1);
+		if (test_calloc_buffer) {
+			test_calloc_buffer[0] = '1';
+			free(test_calloc_buffer);
+		} else {
+			exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
+				     "calloc FAILED.");
+		}
 
-		char *test_realloc_buffer = (char *)realloc(NULL, 100);
-		test_realloc_buffer[0] = '1';
-		free(test_realloc_buffer);
+		char *test_realloc_buffer =
+			(char *)realloc(NULL, TEST_MEMORY_SIZE);
+		if (test_realloc_buffer) {
+			test_realloc_buffer[0] = '1';
+			free(test_realloc_buffer);
+		} else {
+			exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
+				     "realloc FAILED.");
+		}
 	}
 
-	return 1;
+	return 0;
 }
 
 int main(int argc, char **argv)

@@ -14,32 +14,22 @@
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
     Author: Ernest Borowski <e.borowski@samsung.com>
-    Author: Mateusz Nosek <m.nosek@samsung.com>
 */
 #include "esan_wrapper.h"
-#define FPUTS_ITERATION_COUNT 100
-
-// TODO: unify msg name conventions
+#define TEST_MEMORY_SIZE 100
+//TODO: what about exiting on failure and printing error msg
 int perform_testing(const uint8_t *buffer_ptr, size_t buffer_size)
 {
 	(void)buffer_ptr;
 	(void)buffer_size;
-	unsigned fputs_it;
-	FILE *pFile;
-
-	pFile = fopen("fputs.test", "wb");
-	if (pFile == NULL)
-		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
-			     "fopen FAILED.");
-
-	for (fputs_it = 0; fputs_it < FPUTS_ITERATION_COUNT; ++fputs_it) {
-		if (fputs("ab", pFile) < 0) {
-			fclose(pFile);
-			exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
-				     "fputs FAILED.");
-		}
+	char *test_malloc_buffer = (char *)malloc(TEST_MEMORY_SIZE);
+	if (test_malloc_buffer) {
+		test_malloc_buffer[0] = '1';
+		free(test_malloc_buffer);
+	} else {
+		exit_failure(ESAN_TESTS_INTERNAL_ERROR, "malloc FAILED.");
 	}
-	fclose(pFile);
+
 	return 0;
 }
 

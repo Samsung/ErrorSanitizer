@@ -17,103 +17,112 @@
     Author: Jakub Botwicz <j.botwicz@samsung.com>
     Author: Mateusz Nosek <m.nosek@samsung.com>
 */
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 #include "esan_wrapper.h"
+#include <errno.h>
 
-int perform_testing(uint8_t *buffer_ptr, size_t buffer_size)
+// TODO: Unify printf msg
+int perform_testing(const uint8_t *buffer_ptr, size_t buffer_size)
 {
 	(void)buffer_ptr;
 	(void)buffer_size;
 	FILE *pFile;
-	long lSize;
+	long file_size;
 	char *buffer;
 	size_t result;
-	int int_result;
 
 	pFile = fopen("Makefile", "rb");
 	if (pFile == NULL) {
-		printf("File error");
-		exit(1);
+		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR, "File FAILED.");
 	}
-	printf("fopen - SUCCESS!\n");
 
 	/* obtain file size: */
-	int_result = fseeko(pFile, 0, SEEK_END);
-	if (int_result) {
-		printf("fseeko error");
-		exit(1);
+	if (fseeko(pFile, 0, SEEK_END) != 0) {
+		fclose(pFile);
+		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
+			     "fseeko FAILED.");
 	}
-	printf("fseek - SUCCESS!\n");
-	lSize = ftello(pFile);
-	if (lSize == -1) {
-		printf("ftello error");
-		exit(1);
+
+	file_size = ftello(pFile);
+	if (file_size == -1) {
+		fclose(pFile);
+		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
+			     "ftello FAILED.");
 	}
-	printf("ftell - SUCCESS!\n");
+
 	if (fseeko(pFile, 0L, SEEK_SET) != 0) {
-		fprintf(stderr, "fseeko error");
-		exit(1);
+		fclose(pFile);
+		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
+			     "fseeko FAILED.");
 	}
+
 	rewind(pFile);
-	printf("rewind - SUCCESS!\n");
 
 	/* allocate memory to contain the whole file: */
-	buffer = (char *)malloc(sizeof(char) * lSize);
-	printf("malloc - SUCCESS!\n");
+	buffer = (char *)malloc(sizeof(char) * file_size);
 	if (buffer == NULL) {
-		printf("Memory error");
-		exit(2);
+		fclose(pFile);
+		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
+			     "malloc FAILED.");
 	}
 
 	/* copy the file into the buffer: */
-	result = fread(buffer, 1, lSize, pFile);
-	printf("fread - SUCCESS!\n");
-	if (result != (size_t)lSize) {
-		printf("Reading error");
-		exit(3);
+	result = fread(buffer, 1, file_size, pFile);
+
+	if (result != (size_t)file_size) {
+		fclose(pFile);
+		free(buffer);
+		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
+			     "Reading FAILED.");
 	}
 
 	/* the whole file is now loaded in the memory buffer. */
 
 	/* terminate */
-	int_result = fclose(pFile);
-	if (int_result) {
-		printf("fclose error");
-		exit(1);
+	if (fclose(pFile) != 0) {
+		free(buffer);
+		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
+			     "fclose FAILED.");
 	}
-	printf("fclose - SUCCESS!\n");
+
 	free(buffer);
-	printf("free - SUCCESS!\n");
 
 	pFile = fopen("Makefile", "rb");
-	printf("fopen - SUCCESS!\n");
 
 	/* obtain file size: */
-	fseek(pFile, 0, SEEK_END);
-	printf("fseek - SUCCESS!\n");
-	lSize = ftell(pFile);
-	printf("ftell - SUCCESS!\n");
+	if (fseeko(pFile, 0, SEEK_END) != 0) {
+		fclose(pFile);
+		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
+			     "fseeko FAILED.");
+	}
+
+	file_size = ftell(pFile);
+
 	rewind(pFile);
-	printf("rewind - SUCCESS!\n");
 
 	/* allocate memory to contain the whole file: */
-	buffer = (char *)malloc(sizeof(char) * lSize);
-	printf("malloc - SUCCESS!\n");
+	buffer = (char *)malloc(sizeof(char) * file_size);
+	if (buffer == NULL) {
+		fclose(pFile);
+		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
+			     "malloc FAILED.");
+	}
 
 	/* copy the file into the buffer: */
-	result = fread(buffer, 1, lSize, pFile);
-	printf("fread - SUCCESS!\n");
-
-	/* the whole file is now loaded in the memory buffer. */
-
-	/* terminate */
-	fclose(pFile);
-	printf("fclose - SUCCESS!\n");
+	result = fread(buffer, 1, file_size, pFile);
 	free(buffer);
-	printf("free - SUCCESS!\n");
+
+	if (result != (size_t)file_size) {
+		fclose(pFile);
+		fprintf(stderr, "result: %ld ", result);
+		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
+			     "fread FAILED.");
+	}
+
+	if (fclose(pFile) != 0) {
+		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
+			     "fclose FAILED.");
+	}
 
 	return 0;
 }

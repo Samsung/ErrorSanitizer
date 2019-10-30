@@ -18,25 +18,43 @@
     Author: Mateusz Nosek <m.nosek@samsung.com>
 */
 #include <assert.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/stat.h>
-#include <unistd.h>
 
 #include "error_sanitizer.h"
 
 #define MAX_FILE_SIZE (1024)
 
-inline static void exit_print(const char *msg, int code)
-{
-	if (msg != NULL)
-		fprintf(stderr, "%s\n", msg);
-	exit(code);
-}
+enum ESAN_TESTS_ERROR_CODE_E {
+	ESAN_TESTS_SUCCESS = 0,
+	ESAN_TESTS_INTERNAL_ERROR = 1,
+	ESAN_TESTS_LIBRARY_FUNCTION_ERROR = 2,
+	ESAN_TESTS_INVALID_ARGUMENT = 3
+};
 
-extern int perform_testing(uint8_t *buffer_ptr, size_t buffer_size);
+#define exit_failure(err_code, message, args...)                         \
+	do {                                                             \
+		fprintf(stderr, "%s | %s:%d | ", __FILE__, __FUNCTION__, \
+			__LINE__);                                       \
+		fprintf(stderr, message, ##args);                        \
+		fprintf(stderr, "\n");                                   \
+		exit(err_code);                                          \
+	} while (0)
+
+#define exit_success(message, args...) \
+	exit_failure(ESAN_TESTS_SUCCESS, message, ##args)
+
+/*inline static void exit_failure(enum ESAN_TESTS_ERROR_CODE_E err_code, const char *msg) {
+	fprintf(stderr, "%s", msg);
+	exit(err_code);
+}*/
+
+/*inline static void exit_success(const char *msg) {
+	exit_failure(ESAN_TESTS_SUCCESS, msg);
+}*/
+
+extern int perform_testing(const uint8_t *buffer_ptr, size_t buffer_size);
 
 inline static uint8_t *read_data_from_file(const char *path,
 					   size_t *ptr_data_size)
@@ -44,7 +62,7 @@ inline static uint8_t *read_data_from_file(const char *path,
 	FILE *file_desc;
 	int result = -1;
 	uint8_t *buffer = NULL;
-	unsigned i;
+	unsigned data_it;
 	if (path == NULL)
 		return NULL;
 
@@ -59,8 +77,10 @@ inline static uint8_t *read_data_from_file(const char *path,
 	size_t data_size = stat_str.st_size;
 
 	buffer = (uint8_t *)malloc(data_size + 1);
-	if (buffer == NULL)
-		exit(-1);
+	if (buffer == NULL) {
+		fclose(file_desc);
+		return NULL;
+	}
 
 	buffer[data_size] = 0;
 
@@ -68,8 +88,8 @@ inline static uint8_t *read_data_from_file(const char *path,
 	assert(data_size_read == data_size);
 	*ptr_data_size = data_size;
 
-	for (i = 0; i < data_size + 1; ++i)
-		printf("%02hhX ", (unsigned char)(buffer[i] & 0xff));
+	for (data_it = 0; data_it < data_size + 1; ++data_it)
+		printf("%02hhX ", (unsigned char)(buffer[data_it] & 0xff));
 	printf("\n");
 
 	fclose(file_desc);
@@ -82,14 +102,15 @@ inline static int main0(int argc, char *argv[])
 	size_t buff_size = 0, test_buff_size = 0;
 
 	if (argc != 2)
-		exit_print(
-			"Wrong number of arguments.  Expected 1 argument - file path!\n",
-			-1);
+		exit_failure(
+			ESAN_TESTS_INVALID_ARGUMENT,
+			"Wrong number of arguments.  Expected 1 argument - file path!\n");
 
 	buff_ptr = read_data_from_file(argv[1], &buff_size);
 
-	if (buff_size == 0)
-		exit_print("Input file is empty!\n", -1);
+	if (buff_ptr == NULL || buff_size == 0)
+		exit_failure(ESAN_TESTS_INTERNAL_ERROR,
+			     "Input file is empty!\n");
 
 	printf("size of input data = %zu\n", buff_size);
 
@@ -117,6 +138,5 @@ inline static int main0(int argc, char *argv[])
 	printf("finished testing!!\n");
 
 	free(buff_ptr);
-	exit(0);
 	return 0;
 }

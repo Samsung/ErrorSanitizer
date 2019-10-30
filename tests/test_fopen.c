@@ -14,30 +14,29 @@
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
     Author: Ernest Borowski <e.borowski@samsung.com>
-    Author: Mateusz Nosek <m.nosek@samsung.com>
 */
 #include "esan_wrapper.h"
-#define FPUTS_ITERATION_COUNT 100
+#include <string.h>
 
-// TODO: unify msg name conventions
+// TODO: Unify printf msg
 int perform_testing(const uint8_t *buffer_ptr, size_t buffer_size)
 {
 	(void)buffer_ptr;
 	(void)buffer_size;
-	unsigned fputs_it;
 	FILE *pFile;
+	const char *test_buffer = "fopen_test_buffer";
+	size_t test_buffer_size = strlen(test_buffer);
 
-	pFile = fopen("fputs.test", "wb");
-	if (pFile == NULL)
+	pFile = fopen("fopen.test", "wb");
+	if (pFile == NULL) {
 		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
 			     "fopen FAILED.");
-
-	for (fputs_it = 0; fputs_it < FPUTS_ITERATION_COUNT; ++fputs_it) {
-		if (fputs("ab", pFile) < 0) {
-			fclose(pFile);
-			exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
-				     "fputs FAILED.");
-		}
+	}
+	if (fwrite(test_buffer, 1, test_buffer_size, pFile) !=
+	    test_buffer_size) {
+		fclose(pFile);
+		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
+			     "fwrite FAILED.");
 	}
 	fclose(pFile);
 	return 0;
