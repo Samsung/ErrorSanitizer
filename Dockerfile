@@ -22,15 +22,40 @@ ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get -y update && apt-get -y upgrade
 
-RUN apt-get -y install clang make libssl-dev
+RUN apt-get -y install curl gnupg2
 
+RUN curl -L -- https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
+
+RUN echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main" \
+    >> /etc/apt/sources.list
+RUN echo "deb-src http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main" \
+    >> /etc/apt/sources.list
+
+RUN apt-get -y update && apt-get -y upgrade
+
+# install build dependencies
+RUN apt-get -y install clang-9 make libssl-dev
+
+# install CI dependencies
+RUN apt-get -y install bear clang-format-9 clang-tidy-9 clang-tools-9 python3 libfindbin-libs-perl
+RUN ln -s /usr/bin/clang-9 /usr/bin/cc
+RUN ln -s /usr/bin/clang++-9 /usr/bin/cxx
+RUN ln -s /usr/bin/clang-tidy-9 /usr/bin/clang-tidy
+RUN ln -s /usr/bin/clang-format-9 /usr/bin/clang-format
+RUN ln -s /usr/bin/scan-build-9 /usr/bin/scan-build
+RUN ln -s /usr/bin/clang-apply-replacements-9 /usr/bin/clang-apply-replacements
+
+COPY .clang-format /errorsanitizer/
+COPY .clang-format-ignore /errorsanitizer/
 COPY ./ci.sh /errorsanitizer/
 COPY ./*.c /errorsanitizer/
 COPY ./Makefile /errorsanitizer/
 COPY ./hooks /errorsanitizer/hooks/
 COPY ./include /errorsanitizer/include/
 COPY ./tests /errorsanitizer/tests/
+COPY ./ci /errorsanitizer/ci/
 
 WORKDIR /errorsanitizer
+
 CMD bash ci.sh #executes during docker run
 
