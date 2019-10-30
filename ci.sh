@@ -23,6 +23,3 @@ set -e -o pipefail
 
 make clean
 make
-make run
-CFLAGS_LOCAL='-DDEBUG' make rebuild #Also test debug version
-make run

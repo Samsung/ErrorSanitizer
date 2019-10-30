@@ -1,0 +1,132 @@
+# Copyright (c) 2018 - 2019, Samsung Electronics Co., Ltd. All rights reserved.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 2 of the License.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+#
+# Author: Ernest Borowski <e.borowski@samsung.com>
+#
+image: docker:18
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+
+stages:
+  - build
+  - push
+  - code-analize
+  - test
+  #- analize-build-scan
+  #- analize-clang-tidy
+  #- analize-clang-format
+  #- test
+  #- test-on-debug
+
+# Use this if your GitLab runner does not use socket binding
+services:
+  - docker:dind
+
+before_script:
+  # docker login asks for the password to be passed through stdin for security
+  # we use $CI_JOB_TOKEN here which is a special token provided by GitLab
+  #- echo -n $CI_JOB_TOKEN | docker login --password-stdin $CI_REGISTRY
+  - time curl "$GITLAB_REPO_URL"
+  - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN "$GITLAB_REPO_URL" ||
+    docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN "$GITLAB_REPO_URL" ||
+    docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN "$GITLAB_REPO_URL" ||
+    docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN "$GITLAB_REPO_URL"
+
+Build:
+  stage: build
+  script:
+    # fetches the latest image (not failing if image is not found)
+    - docker pull $CI_REGISTRY_IMAGE:latest || true
+    # builds the project, passing proxy variables, and vcs vars for LABEL
+    # notice the cache-from, which is going to use the image we just pulled locally
+    # the built image is tagged locally with the commit SHA, and then pushed to
+    # the GitLab registry
+    - >
+      docker build
+      --pull
+      --build-arg VCS_REF=$CI_COMMIT_SHA
+      --build-arg VCS_URL=$CI_PROJECT_URL
+      --cache-from $CI_REGISTRY_IMAGE:latest
+      --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+      .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+
+# Here, the goal is to tag the "master" branch as "latest"
+Push latest:
+  variables:
+    # We are just playing with Docker here.
+    # We do not need GitLab to clone the source code.
+    GIT_STRATEGY: none
+  stage: push
+  only:
+    # Only "master" should be tagged "latest"
+    - master
+  script:
+    # Because we have no guarantee that this job will be picked up by the same runner
+    # that built the image in the previous step, we pull it again locally
+    - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    # Then we tag it "latest"
+    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:latest
+    # Annnd we push it.
+    - docker push $CI_REGISTRY_IMAGE:latest
+
+Build-scan:
+  stage: code-analize
+  dependencies:
+    - Build
+  script:
+    - echo "pull docker img && run build-scan inside"
+    - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - docker run $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA bash /errorsanitizer/ci/run-build-scan.sh
+
+Clang-tidy:
+  stage: code-analize
+  dependencies:
+    - Build
+  script:
+    - echo "pull docker img && run clang-tidy inside"
+    - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - docker run $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA bash /errorsanitizer/ci/run-clang-tidy.sh
+
+
+Clang-format:
+  stage: code-analize
+  dependencies:
+    - Build
+  script:
+    - echo "pull docker img && run clang-format"
+    - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - docker run $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA bash /errorsanitizer/ci/run-clang-format.sh
+
+
+Test:
+  stage: test
+  dependencies:
+    - Build
+  script:
+    - echo "pull docker img && make && make tests"
+    - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - docker run $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA bash /errorsanitizer/ci/run-tests.sh
+
+Test-on-debug:
+  stage: test
+  dependencies:
+    - Build
+  script:
+    - echo "pull docker img && CFLAGS_LOCAL=\"-O0 -ggdb -DDEBUG\" make && make tests"
+    - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - docker run $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA bash /errorsanitizer/ci/run-tests-on-debug.sh
