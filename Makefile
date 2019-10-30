@@ -13,6 +13,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 #
+# Author: Ernest Borowski <e.borowski@samsung.com>
 # Author: Jakub Botwicz <j.botwicz@samsung.com>
 # Author: Mateusz Nosek <m.nosek@samsung.com>
 #
@@ -24,10 +25,14 @@ FAIL_CHANCE ?= 70
 CC ?= clang
 
 INCLUDE_FLAGS = -I${ESAN_PATH}/include
-CFLAGS = $(CFLAGS_LOCAL) ${INCLUDE_FLAGS} -fPIC -Wall -Wextra -Werror
-LFLAGS = $(LFLAGS_LOCAL)
-CFLAGS_LIB = -fPIC ${INCLUDE_FLAGS}
-LFLAGS_LIB = -shared -ldl
+# Shared CFLAGS between library and other components
+CFLAGS_SHARED = ${INCLUDE_FLAGS} -fPIC -Wall -Wextra -Werror -std=gnu89
+# CFLAGS for other components
+CFLAGS = $(CFLAGS_LOCAL) ${CFLAGS_SHARED}
+LDFLAGS = $(LDFLAGS_LOCAL)
+# CFLAGS for library
+CFLAGS_LIB = $(CFLAGS_LIB_LOCAL) ${CFLAGS_SHARED}
+LDFLAGS_LIB = $(LDFLAGS_LIB_LOCAL) -shared -ldl
 
 PRELOAD_SRC     = error_sanitizer_preload.c in_library.c sanitizer_fail.c
 PRELOAD_OBJ		= $(PRELOAD_SRC:.c=.o) ${HOOK_PATH}/hooks.o
@@ -48,13 +53,13 @@ run: ev
 ev: hook $(LIBS) test
 
 error_sanitizer.so:
-	$(CC) $(CFLAGS_LIB) -o $@ error_sanitizer.c -Wall -Wextra $(LFLAGS_LIB)
+	$(CC) $(CFLAGS_LIB) -o $@ error_sanitizer.c $(LDFLAGS_LIB)
 
 error_sanitizer_preload.so: error_sanitizer.so $(PRELOAD_OBJ)
-	$(CC) $(CFLAGS_LIB) -o $@ $(PRELOAD_OBJ) $(LFLAGS_LIB)
+	$(CC) $(CFLAGS_LIB) -o $@ $(PRELOAD_OBJ) $(LDFLAGS_LIB)
 
 error_sanitizer_RAND.so: $(PRELOAD_OBJ_RAND)
-	$(CC) $(CFLAGS_LIB) -o $@ $(PRELOAD_OBJ_RAND) -DFAIL_CHANCE=$(FAIL_CHANCE) $(LFLAGS_LIB)
+	$(CC) $(CFLAGS_LIB) -o $@ $(PRELOAD_OBJ_RAND) -DFAIL_CHANCE=$(FAIL_CHANCE) $(LDFLAGS_LIB)
 
 
 clean: hook_clean test_clean
@@ -63,12 +68,14 @@ clean: hook_clean test_clean
 hook: ${HOOK_PATH}/hooks.o
 
 ${HOOK_PATH}/hooks.o:
-	cd ${HOOK_PATH} && ESAN_PATH=${ESAN_PATH} CFLAGS_LOCAL="${CFLAGS}" CC=${CC} INCLUDE_FLAGS=${INCLUDE_FLAGS} $(MAKE)
+	cd ${HOOK_PATH} && ESAN_PATH=${ESAN_PATH} CFLAGS_LOCAL="${CFLAGS}" \
+		LDFLAGS_LOCAL="${LDFLAGS}" CC=${CC} $(MAKE)
 hook_clean:
 	cd ${HOOK_PATH} && ESAN_PATH=${ESAN_PATH} $(MAKE) clean
 
 test: $(LIBS)
-	cd ${TEST_PATH} && ESAN_PATH=${ESAN_PATH} CFLAGS_LOCAL="${CFLAGS}" CC=${CC} INCLUDE_FLAGS=${INCLUDE_FLAGS} $(MAKE)
+	cd ${TEST_PATH} && ESAN_PATH=${ESAN_PATH} CFLAGS_LOCAL="${CFLAGS}" \
+		LDFLAGS_LOCAL="${LDFLAGS}" CC=${CC} $(MAKE)
 test_clean:
 	cd ${TEST_PATH} && ESAN_PATH=${ESAN_PATH} $(MAKE) clean
 

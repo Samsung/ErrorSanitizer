@@ -13,6 +13,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 #
+# Author: Ernest Borowski <e.borowski@samsung.com>
 # Author: Jakub Botwicz <j.botwicz@samsung.com>
 # Author: Mateusz Nosek <m.nosek@samsung.com>
 #
@@ -22,11 +23,8 @@ endif
 
 CC ?= clang
 
-CFLAGS_LOCAL ?= -I${ESAN_PATH}/include
-LFLAGS_LOCAL ?= ${ESAN_PATH}/error_sanitizer.so
-
-CFLAGS  = $(CFLAGS_LOCAL) -fPIC
-LFLAGS  = $(LFLAGS_LOCAL)
+CFLAGS = ${CFLAGS_LOCAL}
+LDFLAGS = ${LDFLAGS_LOCAL} ${ESAN_PATH}/error_sanitizer.so
 
 SRC     = $(wildcard *.c)
 OBJ     = $(SRC:.c=.o)
@@ -42,8 +40,12 @@ all: $(OBJ) $(EXEC)
 
 clean:
 	rm -f $(OBJ) $(EXEC)
+	rm -f "fopen.test"
+	rm -f "fclose.test"
 
 tests: $(RESULTS)
+	rm -f "fopen.test"
+	rm -f "fclose.test"
 
 ############################################################################
 
@@ -51,10 +53,10 @@ tests: $(RESULTS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 test_openssl.elf: test_openssl.o
-	$(CC) -o $@ $^ $(LFLAGS) -lssl -lcrypto
+	$(CC) -o $@ $^ $(LDFLAGS) -lssl -lcrypto
 
 %.elf: %.o
-	$(CC) -o $@ $^ $(LFLAGS)
+	$(CC) -o $@ $^ $(LDFLAGS)
 
 %.txt: %.elf
 	LD_PRELOAD=${ESAN_PATH}/error_sanitizer_preload.so ./$< esan_always_succeed.map

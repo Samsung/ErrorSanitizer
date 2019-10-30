@@ -69,6 +69,8 @@ char *real_strndup(const char *s, size_t n)
 	exit(-1);
 }
 
+// parameter names starting with __ are reserved for standard library
+// NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name)
 char *strndup(const char *s, size_t n)
 {
 	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);

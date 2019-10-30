@@ -51,15 +51,19 @@ static int strncmp(const char *s1, const char *s2, size_t n)
 
 static char *strnstr(char *s1, const char *s2, int length)
 {
+	long str_it, len_s1, len_s2;
+
 	if (s1 == NULL || s2 == NULL)
 		return NULL;
 
-	long len_s1 = const_strlen(s1);
-	long len_s2 = const_strlen(s2);
+	len_s1 = const_strlen(s1);
+	len_s2 = const_strlen(s2);
 
-	for (long i = 0; (i < len_s1 - len_s2) && (i < length - len_s2); ++i) {
-		if (0 == strncmp(s1 + i, s2, len_s2))
-			return s1 + i;
+	for (str_it = 0;
+	     (str_it < len_s1 - len_s2) && (str_it < length - len_s2);
+	     ++str_it) {
+		if (0 == strncmp(s1 + str_it, s2, len_s2))
+			return s1 + str_it;
 	}
 	return NULL;
 }

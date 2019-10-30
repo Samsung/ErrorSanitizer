@@ -35,6 +35,8 @@ FILE *real_fopen(const char *filename, const char *mode)
 	exit(-1);
 }
 
+// parameter names starting with __ are reserved for standard library
+// NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name)
 FILE *fopen(const char *filename, const char *mode)
 {
 	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
@@ -208,6 +210,8 @@ int real_fputs(const char *str, FILE *stream)
 	exit(-1);
 }
 
+// parameter names starting with __ are reserved for standard library
+// NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name)
 int fputs(const char *str, FILE *stream)
 {
 	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);

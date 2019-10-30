@@ -13,6 +13,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 #
+# Author: Ernest Borowski <e.borowski@samsung.com>
 # Author: Mateusz Nosek <m.nosek@samsung.com>
 #
 ifeq (${ESAN_PATH},)
@@ -20,8 +21,8 @@ ifeq (${ESAN_PATH},)
 endif
 
 CC ?= clang
-INCLUDE_FLAGS ?= -I${ESAN_PATH}/include
-CFLAGS = $(CFLAGS_LOCAL) ${INCLUDE_FLAGS} -Wno-unused-parameter -fPIC
+
+CFLAGS = ${CFLAGS_LOCAL} -Wno-unused-parameter
 
 SRC     = $(wildcard hooks_*.c) fail_common.c
 OBJ		= $(SRC:.c=.o)
@@ -32,7 +33,7 @@ all: $(OBJ) hooks.o
 fail_common.o: fail_common.c
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-hooks_%.o: hooks_%.c 
+hooks_%.o: hooks_%.c
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 hooks.o: $(OBJ)

@@ -18,30 +18,28 @@
     Author: Mateusz Nosek <m.nosek@samsung.com>
 */
 #include "hooks_include.h"
-
+#define MAX_MEMORY_ALIGN 64
 /**************************************************************************************/
 
 /* void* calloc(size_t num, size_t size); */
 
 typedef void *(*calloc_func_t)(size_t num, size_t size);
-
 void *real_calloc(size_t num, size_t size)
 {
 	void *tmp;
-	posix_memalign(&tmp, 64, num * size);
-	return tmp;
-	/*
-	static calloc_func_t calloc_func_ptr = NULL;
-	if (NULL == calloc_func_ptr)
-		calloc_func_ptr = (calloc_func_t)dlsym(RTLD_NEXT, "calloc");
-	if (NULL != calloc_func_ptr)
-		return (*calloc_func_ptr)(num, size);
+	size_t it;
+	if (posix_memalign(&tmp, MAX_MEMORY_ALIGN, num * size)) {
+		return NULL;
+	}
+	for (it = 0; it < size * num; ++it) {
+		((char *)tmp)[it] = 0;
+	}
 
-	ESAN_ERROR("Error in dlsym - in 'calloc' wrapper\n");
-	exit(-1);
-	*/
+	return tmp;
 }
 
+// parameter names starting with __ are reserved for standard library
+// NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name)
 void *calloc(size_t num, size_t size)
 {
 	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
@@ -105,6 +103,8 @@ void *real_realloc(void *ptr, size_t new_size)
 	exit(-1);
 }
 
+// parameter names starting with __ are reserved for standard library
+// NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name)
 void *realloc(void *ptr, size_t new_size)
 {
 	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);

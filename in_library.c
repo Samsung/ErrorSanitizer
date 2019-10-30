@@ -18,6 +18,7 @@
 */
 #define EOF 0x4
 #define MAX_LIBS 100ul
+#define BUFFER_SIZE 100
 
 struct range {
 	unsigned long min, max;
@@ -34,8 +35,6 @@ void esan_exit_syscall(void)
 
 static void esan_maps_parse_error(void)
 {
-	return;
-	// TODO error me
 }
 
 static const char *path = "/proc/self/maps";
@@ -237,7 +236,7 @@ void initialize(void)
 
 void esan_next_char()
 {
-	static char buf[100];
+	static char buf[BUFFER_SIZE];
 	static unsigned long size = 0;
 	long tmp;
 

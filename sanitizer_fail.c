@@ -73,8 +73,8 @@ static unsigned initialized = 0;
 #define MAX_PERCENT_GRANUALITY 100
 static int random_fail(long fail_chance)
 {
-	long random = rand() % MAX_PERCENT_GRANUALITY;
-	return random < fail_chance;
+	long random_number = random() % MAX_PERCENT_GRANUALITY;
+	return random_number < fail_chance;
 }
 
 static void initialize(void)
@@ -82,7 +82,7 @@ static void initialize(void)
 	char *env;
 	if (!initialized) {
 		++initialized;
-		srand(time(0));
+		srandom(time(0));
 		env = getenv("ESAN_FAIL_CHANCE");
 		if (env != NULL)
 			fail_chance = strtol(env, NULL, 0) %
