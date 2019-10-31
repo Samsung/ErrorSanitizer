@@ -32,9 +32,9 @@ int perform_testing(const uint8_t *buffer_ptr, size_t buffer_size)
 	size_t result;
 
 	pFile = fopen("Makefile", "rb");
-	if (pFile == NULL) {
-		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR, "File FAILED.");
-	}
+	if (pFile == NULL)
+		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
+			     "fopen FAILED.");
 
 	/* obtain file size: */
 	if (fseeko(pFile, 0, SEEK_END) != 0) {
@@ -89,6 +89,10 @@ int perform_testing(const uint8_t *buffer_ptr, size_t buffer_size)
 
 	pFile = fopen("Makefile", "rb");
 
+	if (pFile == NULL)
+		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
+			     "fopen FAILED.");
+
 	/* obtain file size: */
 	if (fseeko(pFile, 0, SEEK_END) != 0) {
 		fclose(pFile);
@@ -97,6 +101,11 @@ int perform_testing(const uint8_t *buffer_ptr, size_t buffer_size)
 	}
 
 	file_size = ftell(pFile);
+	if (file_size == -1) {
+		fclose(pFile);
+		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
+			     "ftell FAILED.");
+	}
 
 	rewind(pFile);
 

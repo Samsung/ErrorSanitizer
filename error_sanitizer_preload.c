@@ -34,6 +34,11 @@ static const char *const ESAN_FUNCTION_NAMES[ESAN_NR_FUNCTIONS] = {
 	"rewind",
 	"ftell",
 	"ftello",
+	"fcntl",
+	"access",
+	"faccessat",
+	"chmod",
+	"fchmod",
 	"EVP_CIPHER_CTX_new",
 	"EVP_MD_CTX_create"
 };

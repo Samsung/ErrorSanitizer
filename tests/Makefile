@@ -40,12 +40,20 @@ all: $(OBJ) $(EXEC)
 
 clean:
 	rm -f $(OBJ) $(EXEC)
-	rm -f "fopen.test"
-	rm -f "fclose.test"
+	$(MAKE) clean_test_files
 
 tests: $(RESULTS)
+	$(MAKE) clean_test_files
+
+clean_test_files:
 	rm -f "fopen.test"
 	rm -f "fclose.test"
+	rm -f "access.test"
+	rm -f "faccessat.test"
+	rm -f "fputs.test"
+	rm -f "ftell.test"
+	rm -f "chmod.test"
+	rm -f "fchmod.test"
 
 ############################################################################
 
