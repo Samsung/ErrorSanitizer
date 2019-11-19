@@ -16,7 +16,10 @@
     Author: Ernest Borowski <e.borowski@samsung.com>
     Author: Mateusz Nosek <m.nosek@samsung.com>
 */
+#include "attributes.h"
 #include "error_sanitizer.h"
+#include "in_library.h"
+
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,15 +32,14 @@ void esan_fail_message(const char *function_name)
 		function_name);
 }
 
-extern int in_library(const void *addr);
 static unsigned int internal_fail(void);
 
-int esan_should_I_fail(void)
+always_inline int esan_should_I_fail(void)
 {
-	/*
-  if(in_library(NULL))
-          return 0;
-  */
+	const void *tmp = __builtin_return_address(0);
+	if (esan_always_succeed || in_library(tmp))
+		return 0;
+
 	return !!(internal_fail());
 }
 

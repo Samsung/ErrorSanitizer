@@ -49,6 +49,7 @@ COPY ./hooks /errorsanitizer/hooks/
 COPY ./include /errorsanitizer/include/
 COPY ./tests /errorsanitizer/tests/
 COPY ./ci /errorsanitizer/ci/
+COPY ./in_library /errorsanitizer/in_library/
 
 WORKDIR /errorsanitizer
 

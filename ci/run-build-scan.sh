@@ -32,6 +32,7 @@ SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
 
 cd "$SCRIPT_DIR/../" #go to main repository folder
 
+make # compile musl, it is needed because we don`t want to execute analysis for musl
 make clean
 export CCC_CXX="clang++-9"
 export CCC_CC="clang-9"
