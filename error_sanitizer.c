@@ -17,7 +17,7 @@
     Author: Jakub Botwicz <j.botwicz@samsung.com>
     Author: Mateusz Nosek <m.nosek@samsung.com>
 */
-*/
+#include "esan_strings.h"
 #include "error_sanitizer.h"
 
 uint8_t esan_always_succeed = 1;
@@ -25,52 +25,11 @@ uint8_t *esan_error_bitmap = NULL;
 size_t esan_error_bitmap_size = 0;
 
 const char SPLIT_STRING[] = "XXXX";
-static long const_strlen(const char *str)
-{
-	const char *cp = str;
-	while (*str++ != '\0')
-		;
-	return str - cp;
-}
-
-static int strncmp(const char *s1, const char *s2, size_t n)
-{
-	size_t i;
-	int tmp;
-
-	for (i = 0; i < n; i++, s1++, s2++) {
-		tmp = *s1 - *s2;
-		if (tmp != 0)
-			return tmp;
-		if (*s1 == '\0')
-			return 0;
-	}
-
-	return 0;
-}
-
-static char *strnstr(char *s1, const char *s2, int length)
-{
-	long str_it, len_s1, len_s2;
-
-	if (s1 == NULL || s2 == NULL)
-		return NULL;
-
-	len_s1 = const_strlen(s1);
-	len_s2 = const_strlen(s2);
-
-	for (str_it = 0;
-	     (str_it < len_s1 - len_s2) && (str_it < length - len_s2);
-	     ++str_it) {
-		if (0 == strncmp(s1 + str_it, s2, len_s2))
-			return s1 + str_it;
-	}
-	return NULL;
-}
 
 uint8_t *esan_split_input_file(uint8_t *data, size_t size)
 {
-	uint8_t *result = (uint8_t *)strnstr((char *)data, SPLIT_STRING, size);
+	uint8_t *result =
+		(uint8_t *)esan_strnstr((char *)data, SPLIT_STRING, size);
 	if (NULL != result)
 		result += 4; /* sizeof SPLIT_STRING */
 	return result;
