@@ -33,11 +33,11 @@ SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
 cd "$SCRIPT_DIR/../" #go to main repository folder
 
 make clean
-ARGS=""
+ARGS=()
 for arg in "$@"; do
 	case "$arg" in
 		--inplace | -i)
-			ARGS="${ARGS} -i"
+			ARGS+=('-i')
 			;;
 		*)
 			echo "This script does not support <$arg> flag. Usage: $0 [--inplace || -i]" 1>&2
@@ -45,10 +45,14 @@ for arg in "$@"; do
 			;;
 	esac
 done
-if [ ! -f run-clang-format.py ]; then
+
+if [ ! -f ci/run-clang-format.py ]; then
 curl -Sl https://raw.githubusercontent.com/xerrni/run-clang-format/master/run-clang-format.py > \
-	run-clang-format.py
+	ci/run-clang-format.py
 fi
 
-#shellcheck disable=SC2086
-python3 run-clang-format.py -r --style="file" $ARGS ./
+find . -type f -print0 | \
+	grep -E --null-data -v '^\./(\.[^/]|in_library/musl)' |\
+	grep --null-data '\.[ch]$' |\
+	xargs -0 --no-run-if-empty --max-args=1 \
+		python3 ci/run-clang-format.py --style="file" "${ARGS[@]}" --

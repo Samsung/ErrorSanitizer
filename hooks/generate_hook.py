@@ -1,3 +1,4 @@
+#!/bin/python3
 # Copyright (c) 2018 - 2019, Samsung Electronics Co., Ltd. All rights reserved.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -13,6 +14,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 #
+# Author: Ernest Borowski <e.borowski@samsung.com>
 # Author: Jakub Botwicz <j.botwicz@samsung.com>
 # Author: Mateusz Nosek <m.nosek@samsung.com>
 #
@@ -33,7 +35,7 @@ typedef {func_return_value}(*{func_name}_func_t) {func_full_params};
 {func_return_value} esan_on_fail_{func_name}{func_full_params}
 {{
     /* TODO implement below action performed on failure of hooked function */
-    return ({func_return_value})NULL; 
+    return ({func_return_value})NULL;
 }}
 
 {func_return_value} real_{func_name}{func_full_params}
@@ -79,46 +81,46 @@ def process_definition(definition):
     if "*" in func_name:
         func_name = func_name.lstrip("*")
         func_return_value += "*"
-    print "function definition = " + definition.strip()
-    print "function name = " + func_name
-    print "function return value = " + func_return_value
+    print("function definition = " + definition.strip())
+    print("function name = " + func_name)
+    print("function return value = " + func_return_value)
     func_full_params = "(" + tail_def
-    print "function full params = " + func_full_params    
+    print("function full params = " + func_full_params)
     params = tail_def.rstrip(")")
     params = params.strip()
     params_split = params.split(",")
-    short_param = "(";
+    short_param = "("
     for param in params_split:
         param = param.strip()
         param_split = param.rsplit()
         short_param += param_split[-1].lstrip("*") + ", "
     short_param = short_param.rstrip(", ")
-    short_param += ")";
-    print "function param names = " + short_param
+    short_param += ")"
+    print("function param names = " + short_param)
     if (short_param == "(void)"):
         short_param = "()"
 
-    return generate_hook(definition.strip(), func_name, func_return_value, func_full_params, short_param);
+    return generate_hook(definition.strip(), func_name, func_return_value, func_full_params, short_param)
 
 
 if (len(sys.argv) != 3):
-    print "Wrong number of input params\nUsage: %s input_file output_file" %sys.argv[0]
+    print("Wrong number of input params\nUsage: %s input_file output_file" %sys.argv[0])
     sys.exit()
 
 output_file = open(sys.argv[2], 'w')
 
-with open(sys.argv[1], 'r') as input_file:  
+with open(sys.argv[1], 'r') as input_file:
     line = input_file.readline()
     while line:
         line = line.strip()
-        print line
+        print(line)
         if line.startswith("#") or (len(line) == 0):
             line = input_file.readline()
             continue
         hook = process_definition(line)
         output_file.write(hook)
         line = input_file.readline()
-        print
+        print("")
 
 input_file.close()
 output_file.close()

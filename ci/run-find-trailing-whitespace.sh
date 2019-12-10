@@ -33,19 +33,23 @@ SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
 cd "$SCRIPT_DIR/../" #go to main repository folder
 
 make clean
-bear make
+EXIT_CODE=0
+WHILE_EXECUTED=0
+while IFS= read -r -d '' f; do
+	if [ -f "$f" ]; then # git submodules are listed as files!!
+		if [ "$(grep -c '[[:blank:]]$' "$f")" != "0" ]; then
+			echo -e "\nFound whitespace in file: $f"
+			grep -n --color="ALWAYS" '[[:blank:]]$' "$f"
+			EXIT_CODE=1
+		fi
+	fi
+	WHILE_EXECUTED=1
+done < <(find . -type f -print0 | \
+		grep -E --null-data -v '^\./(\.[^/]|in_library/musl)' |\
+		grep -E --null-data '(/Makefile|\.([ch]|map|sh|md))$')
 
-if [ ! -f ci/run-clang-tidy.py ]; then
-	curl -Sl "https://raw.githubusercontent.com/llvm-mirror/clang-tools-extra/release_90/clang-tidy/tool/run-clang-tidy.py" > \
-		ci/run-clang-tidy.py
+if [ "$WHILE_EXECUTED" != "1" ]; then
+	echo "Unable to execute git ls-files"
+	exit 100
 fi
-
-python ci/run-clang-tidy.py -clang-tidy-binary /usr/bin/clang-tidy \
-	-clang-apply-replacements-binary /usr/bin/clang-apply-replacements -quiet \
-	-checks="-,abseil*,bugprone*,cert*,clang-analyzer*,cppcoreguidelines*,hicpp*,llvm*,misc*,modernize*,performance*,readability*,-hicpp-braces-around-statements,-readability-braces-around-statements,-readability-else-after-return,-readability-isolate-declaration" \
-	| tee output.txt
-
-if [ "$(grep -cE ".*[0-9]+:[0-9]+: (warning|error).*\[.*\]$" output.txt)" != "0" ]; then
-	echo "clang-tidy found errors or warnings" 1>&2
-	exit 1
-fi
+exit $EXIT_CODE
