@@ -15,29 +15,5 @@
 
     Author: Ernest Borowski <e.borowski@samsung.com>
 */
-#include "esan_wrapper.h"
-#include <string.h>
-
-int main()
-{
-	FILE *pFile;
-	const char *test_buffer = "fopen_test_buffer";
-	size_t test_buffer_size = strlen(test_buffer);
-
-	pFile = fopen("fclose.test", "wb");
-	if (pFile == NULL) {
-		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
-			     "fopen FAILED.");
-	}
-	if (fwrite(test_buffer, 1, test_buffer_size, pFile) !=
-	    test_buffer_size) {
-		fclose(pFile);
-		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
-			     "fwrite FAILED.");
-	}
-	if (fclose(pFile) != 0) {
-		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
-			     "fclose FAILED.");
-	}
-	return 0;
-}
+void __attribute__((constructor)) lib_init(void);
+void __attribute__((destructor)) lib_exit(void);

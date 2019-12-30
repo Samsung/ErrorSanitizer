@@ -24,25 +24,36 @@
 #define _GNU_SOURCE
 #endif
 
-#include "esan_internals.h"
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 
-extern uint8_t esan_always_succeed;
-extern uint8_t *esan_error_bitmap;
+extern int esan_always_succeed;
+extern char *esan_error_bitmap;
 extern size_t esan_error_bitmap_size;
 
 uint8_t *esan_split_input_file(uint8_t *data, size_t size);
 void esan_initialize(uint8_t *bitmap_ptr, size_t bitmap_size);
+void parse_map();
+void parse_map_cleanup();
 
 #ifdef DEBUG
-#define ESAN_DEBUG(...) \
-	fprintf(stdout, "====: ErrorSanitizer: DBG: " __VA_ARGS__)
+#define ESAN_DEBUG(...)                                                     \
+	do {                                                                \
+		uint8_t old_esan_always_succeed = esan_always_succeed;      \
+		esan_always_succeed = 1;                                    \
+		fprintf(stdout, "====: ErrorSanitizer: DBG: " __VA_ARGS__); \
+		esan_always_succeed = old_esan_always_succeed;              \
+	} while (0)
 #else
 #define ESAN_DEBUG(...)
 #endif
 
-#define ESAN_ERROR(...) fprintf(stderr, "====: ErrorSanitizer: " __VA_ARGS__)
-
+#define ESAN_ERROR(...)                                                \
+	do {                                                           \
+		uint8_t old_esan_always_succeed = esan_always_succeed; \
+		esan_always_succeed = 1;                               \
+		fprintf(stderr, "====: ErrorSanitizer: " __VA_ARGS__); \
+		esan_always_succeed = old_esan_always_succeed;         \
+	} while (0)
 #endif /* _ERROR_SANITIZER_H */

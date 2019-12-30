@@ -21,9 +21,11 @@ ESAN_PATH = $(shell pwd)
 TEST_PATH = ${ESAN_PATH}/tests
 HOOK_PATH = ${ESAN_PATH}/hooks
 LIB_PATH = ${ESAN_PATH}/in_library
+SYSROOT = ${LIB_PATH}/sysroot
 
 FAIL_CHANCE ?= 70
 CC ?= clang
+OBJCOPY	:= $(shell which objcopy)
 
 INCLUDE_FLAGS = -I${ESAN_PATH}/include
 # Shared CFLAGS between library and other components
@@ -40,11 +42,12 @@ LIB_OBJ = ${LIB_PATH}/in_library_api.o
 
 PRELOAD_SRC     = error_sanitizer_preload.c sanitizer_fail.c
 
-PRELOAD_OBJ_ALL = ${HOOK_OBJ} ${LIB_OBJ}
-PRELOAD_OBJ		= $(PRELOAD_SRC:.c=.o) ${PRELOAD_OBJ_ALL}
+ESAN_INIT_OBJ := error_sanitizer.o
+ESAN_INIT_OBJ_LINKED := error_sanitizer_linked.o
+ESAN_INIT_OBJ_HIDDEN := error_sanitizer_hidden.o
+ESAN_INIT_OBJ_API := error_sanitizer_api.o
 
-LIBS = error_sanitizer.so error_sanitizer_preload.so
-
+LIBS = error_sanitizer_preload.so
 ############################################################################
 
 all: ev
@@ -57,14 +60,28 @@ run: ev
 
 ev: hook $(LIBS) test
 
-error_sanitizer.so: error_sanitizer.c
-	$(CC) $(CFLAGS_LIB) -o $@ $^ $(LDFLAGS_LIB)
+$(ESAN_INIT_OBJ): error_sanitizer.c $(LIB_OBJ)
+	$(CC) -nostdinc --sysroot=$(SYSROOT) -I$(SYSROOT)/include -c ${CFLAGS} $<
 
-error_sanitizer_preload.so: error_sanitizer.so $(PRELOAD_OBJ)
-	$(CC) $(CFLAGS_LIB) -o $@ $(PRELOAD_OBJ) $(LDFLAGS_LIB)
+$(ESAN_INIT_OBJ_LINKED): $(ESAN_INIT_OBJ)
+	$(LD) -nostdlib --sysroot=$(SYSROOT) -L$(SYSROOT)/lib -r -o $@ $< -lc
+
+$(ESAN_INIT_OBJ_HIDDEN): $(ESAN_INIT_OBJ_LINKED)
+	$(OBJCOPY) --wildcard --localize-symbol='*' $< $@
+
+$(ESAN_INIT_OBJ_API): $(ESAN_INIT_OBJ_HIDDEN)
+	$(OBJCOPY) --globalize-symbol=esan_always_succeed \
+		--globalize-symbol=esan_error_bitmap \
+		--globalize-symbol=esan_error_bitmap_size \
+		--globalize-symbol=parse_map \
+		--globalize-symbol=parse_map_cleanup $< $@
+
+error_sanitizer_preload.so: $(ESAN_INIT_OBJ_API) $(HOOK_OBJ) $(LIB_OBJ)
+	$(CC) $(CFLAGS_LIB) -o $@ $(ESAN_INIT_OBJ_API) $(HOOK_OBJ) ${PRELOAD_SRC} $(LIB_OBJ)  \
+		$(LDFLAGS_LIB)
 
 clean: hook_clean test_clean lib_clean
-	rm -f $(LIBS) $(PRELOAD_OBJ)
+	rm -f $(LIBS) $(HOOK_OBJ)
 
 hook: ${HOOK_PATH}/hooks.o
 
@@ -87,7 +104,3 @@ test: $(LIBS)
 		LDFLAGS_LOCAL="${LDFLAGS}" CC=${CC} $(MAKE)
 test_clean:
 	cd ${TEST_PATH} && ESAN_PATH=${ESAN_PATH} $(MAKE) clean
-
-############################################################################
-%.o: %.c
-	$(CC) -c -o $@ $< $(CFLAGS)

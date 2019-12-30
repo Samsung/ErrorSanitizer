@@ -58,4 +58,3 @@ always_inline int esan_should_I_fail(void)
 
 	return !!(internal_fail());
 }
-

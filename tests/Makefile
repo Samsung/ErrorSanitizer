@@ -24,7 +24,7 @@ endif
 CC ?= clang
 
 CFLAGS = ${CFLAGS_LOCAL}
-LDFLAGS = ${LDFLAGS_LOCAL} ${ESAN_PATH}/error_sanitizer.so
+LDFLAGS = ${LDFLAGS_LOCAL} #${ESAN_PATH}/error_sanitizer_preload.so
 
 SRC     = $(wildcard *.c)
 OBJ     = $(SRC:.c=.o)
@@ -67,4 +67,8 @@ test_openssl.elf: test_openssl.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 %.txt: %.elf
-	LD_PRELOAD=${ESAN_PATH}/error_sanitizer_preload.so ./$< esan_always_succeed.map
+	# temporary map file will be modified by esan
+	cp esan_always_succeed.map "esan_always_succeed.map.$<.cur_input"
+	LD_PRELOAD=${ESAN_PATH}/error_sanitizer_preload.so ./$< "esan_always_succeed.map.$<.cur_input"
+	rm -f "esan_always_succeed.map.$<.cur_input"
+#	-AFL_USE_STDIO="YES" LD_PRELOAD=${ESAN_PATH}/error_sanitizer_preload.so ./$< < esan_always_fail.map

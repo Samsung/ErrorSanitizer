@@ -13,14 +13,14 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
+    Author: Ernest Borowski <e.borowski@samsung.com>
     Author: Mateusz Nosek <m.nosek@samsung.com>
 */
 #include "esan_wrapper.h"
 #include <unistd.h>
-int perform_testing(const uint8_t *buffer_ptr, size_t buffer_size)
+
+int main()
 {
-	(void)buffer_ptr;
-	(void)buffer_size;
 	FILE *file;
 	const char *path = "./access.test";
 	file = fopen(path, "a");
@@ -34,9 +34,4 @@ int perform_testing(const uint8_t *buffer_ptr, size_t buffer_size)
 			     "Access failed!");
 
 	return 0;
-}
-
-int main(int argc, char **argv)
-{
-	return main0(argc, argv);
 }

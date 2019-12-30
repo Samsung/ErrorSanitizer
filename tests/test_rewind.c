@@ -21,11 +21,8 @@
 #include "esan_wrapper.h"
 #include <errno.h>
 
-// TODO: Unify printf msg
-int perform_testing(const uint8_t *buffer_ptr, size_t buffer_size)
+int main()
 {
-	(void)buffer_ptr;
-	(void)buffer_size;
 	FILE *pFile;
 	long file_size;
 	char *buffer;
@@ -134,9 +131,4 @@ int perform_testing(const uint8_t *buffer_ptr, size_t buffer_size)
 	}
 
 	return 0;
-}
-
-int main(int argc, char **argv)
-{
-	return main0(argc, argv);
 }

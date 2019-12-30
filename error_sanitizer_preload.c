@@ -18,6 +18,8 @@
     Author: Mateusz Nosek <m.nosek@samsung.com>
 */
 #include "hooks_include.h"
+#include "error_sanitizer_preload.h"
+#include "in_library.h"
 
 struct stats obj_stats[ESAN_NR_FUNCTIONS];
 
@@ -87,4 +89,16 @@ void exit(int status)
 
 	fputs("Error in dlsym - in 'exit' wrapper\n", stderr);
 	abort();
+}
+
+void lib_init(void)
+{
+	parse_map();
+	in_library_initialize();
+	esan_always_succeed = 0;
+}
+
+void lib_exit(void)
+{
+	parse_map_cleanup();
 }

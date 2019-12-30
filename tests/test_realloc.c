@@ -17,11 +17,9 @@
 */
 #include "esan_wrapper.h"
 #define TEST_MEMORY_SIZE 100
-//TODO: what about exiting on failure and printing error msg
-int perform_testing(const uint8_t *buffer_ptr, size_t buffer_size)
+
+int main()
 {
-	(void)buffer_ptr;
-	(void)buffer_size;
 	char *test_realloc_buffer = (char *)realloc(NULL, TEST_MEMORY_SIZE);
 	if (test_realloc_buffer) {
 		test_realloc_buffer[0] = '1';
@@ -31,9 +29,4 @@ int perform_testing(const uint8_t *buffer_ptr, size_t buffer_size)
 	}
 
 	return 0;
-}
-
-int main(int argc, char **argv)
-{
-	return main0(argc, argv);
 }

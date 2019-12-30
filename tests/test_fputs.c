@@ -19,11 +19,8 @@
 #include "esan_wrapper.h"
 #define FPUTS_ITERATION_COUNT 100
 
-// TODO: unify msg name conventions
-int perform_testing(const uint8_t *buffer_ptr, size_t buffer_size)
+int main()
 {
-	(void)buffer_ptr;
-	(void)buffer_size;
 	unsigned fputs_it;
 	FILE *pFile;
 
@@ -41,9 +38,4 @@ int perform_testing(const uint8_t *buffer_ptr, size_t buffer_size)
 	}
 	fclose(pFile);
 	return 0;
-}
-
-int main(int argc, char **argv)
-{
-	return main0(argc, argv);
 }

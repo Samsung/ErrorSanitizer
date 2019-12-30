@@ -18,11 +18,9 @@
 #include "esan_wrapper.h"
 #define TEST_MEMORY_SIZE 100
 #define MSG_BUF_SIZE 512
-//TODO: what about exiting on failure and printing error msg
-int perform_testing(const uint8_t *buffer_ptr, size_t buffer_size)
+
+int main()
 {
-	(void)buffer_ptr;
-	(void)buffer_size;
 	size_t callocIt;
 	char *test_calloc_buffer = (char *)calloc(TEST_MEMORY_SIZE, 1);
 	if (test_calloc_buffer) {
@@ -45,9 +43,4 @@ int perform_testing(const uint8_t *buffer_ptr, size_t buffer_size)
 	}
 
 	return 0;
-}
-
-int main(int argc, char **argv)
-{
-	return main0(argc, argv);
 }

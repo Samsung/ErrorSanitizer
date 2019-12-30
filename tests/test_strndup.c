@@ -18,10 +18,8 @@
 #include "esan_wrapper.h"
 #include <string.h>
 
-int perform_testing(const uint8_t *buffer_ptr, size_t buffer_size)
+int main()
 {
-	(void)buffer_ptr;
-	(void)buffer_size;
 	char test_string[] = "strndup_test_string";
 
 	char *test_strndup = strndup(test_string, sizeof(test_string));
@@ -32,9 +30,4 @@ int perform_testing(const uint8_t *buffer_ptr, size_t buffer_size)
 		exit_failure(ESAN_TESTS_INTERNAL_ERROR, "strndup FAILED.");
 	}
 	return 0;
-}
-
-int main(int argc, char **argv)
-{
-	return main0(argc, argv);
 }

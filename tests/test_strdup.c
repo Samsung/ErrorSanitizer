@@ -20,10 +20,8 @@
 #include "esan_wrapper.h"
 #include <string.h>
 
-int perform_testing(const uint8_t *buffer_ptr, size_t buffer_size)
+int main()
 {
-	(void)buffer_ptr;
-	(void)buffer_size;
 	char test_string[] = "strdup_test_string";
 	char *test_strdup = strdup(test_string);
 	char *test_strdup2 = strdup(test_string);
@@ -38,9 +36,4 @@ int perform_testing(const uint8_t *buffer_ptr, size_t buffer_size)
 	}
 
 	return 0;
-}
-
-int main(int argc, char **argv)
-{
-	return main0(argc, argv);
 }

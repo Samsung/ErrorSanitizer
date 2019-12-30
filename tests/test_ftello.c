@@ -21,11 +21,8 @@
 #define TEST_STRING "ab"
 #define TEST_STRING_SIZE 2 // do not use sizeof(TEST_STRING), it includes '\0'
 
-// TODO: Unify printf msg
-int perform_testing(const uint8_t *buffer_ptr, size_t buffer_size)
+int main()
 {
-	(void)buffer_ptr;
-	(void)buffer_size;
 	unsigned fputs_it;
 	FILE *pFile;
 	long file_start_pos, file_end_pos;
@@ -70,9 +67,4 @@ int perform_testing(const uint8_t *buffer_ptr, size_t buffer_size)
 			     "fclose FAILED.");
 	}
 	return 0;
-}
-
-int main(int argc, char **argv)
-{
-	return main0(argc, argv);
 }
