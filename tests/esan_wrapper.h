@@ -23,6 +23,7 @@
 #include <sys/stat.h>
 
 #include "error_sanitizer.h"
+#include "log.h"
 
 #define MAX_FILE_SIZE (1024)
 
@@ -32,27 +33,6 @@ enum ESAN_TESTS_ERROR_CODE_E {
 	ESAN_TESTS_LIBRARY_FUNCTION_ERROR = 2,
 	ESAN_TESTS_INVALID_ARGUMENT = 3
 };
-
-#define exit_failure(err_code, message, args...)                         \
-	do {                                                             \
-		fprintf(stderr, "%s | %s:%d | ", __FILE__, __FUNCTION__, \
-			__LINE__);                                       \
-		fprintf(stderr, message, ##args);                        \
-		fprintf(stderr, "\n");                                   \
-		exit(err_code);                                          \
-	} while (0)
-
-#define exit_success(message, args...) \
-	exit_failure(ESAN_TESTS_SUCCESS, message, ##args)
-
-/*inline static void exit_failure(enum ESAN_TESTS_ERROR_CODE_E err_code, const char *msg) {
-	fprintf(stderr, "%s", msg);
-	exit(err_code);
-}*/
-
-/*inline static void exit_success(const char *msg) {
-	exit_failure(ESAN_TESTS_SUCCESS, msg);
-}*/
 
 extern int perform_testing(const uint8_t *buffer_ptr, size_t buffer_size);
 
