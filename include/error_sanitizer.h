@@ -30,13 +30,11 @@
 #include <stdio.h>
 
 extern uint8_t esan_always_succeed;
-#ifndef FAIL_CHANCE
 extern uint8_t *esan_error_bitmap;
 extern size_t esan_error_bitmap_size;
 
 uint8_t *esan_split_input_file(uint8_t *data, size_t size);
 void esan_initialize(uint8_t *bitmap_ptr, size_t bitmap_size);
-#endif
 
 #ifdef DEBUG
 #define ESAN_DEBUG(...) \

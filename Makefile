@@ -42,9 +42,8 @@ PRELOAD_SRC     = error_sanitizer_preload.c sanitizer_fail.c
 
 PRELOAD_OBJ_ALL = ${HOOK_OBJ} ${LIB_OBJ}
 PRELOAD_OBJ		= $(PRELOAD_SRC:.c=.o) ${PRELOAD_OBJ_ALL}
-PRELOAD_OBJ_RAND 	= $(PRELOAD_SRC:.c=_RAND.o) ${PRELOAD_OBJ_ALL}
 
-LIBS = error_sanitizer.so error_sanitizer_preload.so error_sanitizer_RAND.so
+LIBS = error_sanitizer.so error_sanitizer_preload.so
 
 ############################################################################
 
@@ -64,12 +63,8 @@ error_sanitizer.so: error_sanitizer.c
 error_sanitizer_preload.so: error_sanitizer.so $(PRELOAD_OBJ)
 	$(CC) $(CFLAGS_LIB) -o $@ $(PRELOAD_OBJ) $(LDFLAGS_LIB)
 
-error_sanitizer_RAND.so: $(PRELOAD_OBJ_RAND)
-	$(CC) $(CFLAGS_LIB) -o $@ $(PRELOAD_OBJ_RAND) -DFAIL_CHANCE=$(FAIL_CHANCE) $(LDFLAGS_LIB)
-
-
 clean: hook_clean test_clean lib_clean
-	rm -f $(LIBS) $(PRELOAD_OBJ) $(PRELOAD_OBJ_RAND)
+	rm -f $(LIBS) $(PRELOAD_OBJ)
 
 hook: ${HOOK_PATH}/hooks.o
 
@@ -94,9 +89,5 @@ test_clean:
 	cd ${TEST_PATH} && ESAN_PATH=${ESAN_PATH} $(MAKE) clean
 
 ############################################################################
-%_RAND.o: %.c
-	$(CC) -c -o $@ $< $(CFLAGS) -DFAIL_CHANCE=$(FAIL_CHANCE)
-
 %.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS)
-
