@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2018 - 2019, Samsung Electronics Co., Ltd. All rights reserved.
+    Copyright (c) 2018 - 2020, Samsung Electronics Co., Ltd. All rights reserved.
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -58,7 +58,8 @@ static unsigned int internal_fail(void)
 	if (index_byte >= esan_error_bitmap_size)
 		return 1;
 
-	return ((1U << index_bit) & esan_error_bitmap[index_byte]);
+	return ((1U << index_bit) &
+		(unsigned char)esan_error_bitmap[index_byte]);
 }
 #else
 
