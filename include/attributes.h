@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2018 - 2019, Samsung Electronics Co., Ltd. All rights reserved.
+    Copyright (c) 2018 - 2020, Samsung Electronics Co., Ltd. All rights reserved.
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -13,6 +13,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
+    Author: Ernest Borowski <e.borowski@samsung.com>
     Author: Mateusz Nosek <m.nosek@samsung.com>
 */
 #ifndef _ATTRIBUTE_H

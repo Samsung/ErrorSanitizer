@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2018 - 2020, Samsung Electronics Co., Ltd. All rights reserved.
+    Copyright (c) 2000, Samsung Electronics Co., Ltd. All rights reserved.
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -12,22 +12,4 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
-
-    Author: Ernest Borowski <e.borowski@samsung.com>
 */
-#include "esan_wrapper.h"
-#include <string.h>
-
-int main()
-{
-	char test_string[] = "strndup_test_string";
-
-	char *test_strndup = strndup(test_string, sizeof(test_string));
-	if (test_strndup) {
-		test_strndup[0] = '1';
-		free(test_strndup);
-	} else {
-		exit_failure(ESAN_TESTS_INTERNAL_ERROR, "strndup FAILED.");
-	}
-	return 0;
-}
