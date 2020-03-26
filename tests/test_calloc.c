@@ -21,9 +21,14 @@
 
 int main()
 {
-	size_t callocIt;
-	char *test_calloc_buffer = (char *)calloc(TEST_MEMORY_SIZE, 1);
+	char *test_calloc_buffer = calloc(TEST_MEMORY_SIZE, 1);
 	if (test_calloc_buffer) {
+#ifdef ESAN_FAIL_TEST
+		free(test_calloc_buffer);
+		exit_failure(ESAN_TESTS_FAILURE,
+			     "calloc should have failed, but didn't.");
+#else
+		size_t callocIt;
 		for (callocIt = 0; callocIt < TEST_MEMORY_SIZE; ++callocIt) {
 			if (test_calloc_buffer[callocIt] != 0) {
 				char msgBuf[MSG_BUF_SIZE];
@@ -37,9 +42,14 @@ int main()
 			}
 		}
 		free(test_calloc_buffer);
+#endif
 	} else {
+#ifdef ESAN_FAIL_TEST
+		log("calloc successfully failed.");
+#else
 		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
 			     "calloc FAILED.");
+#endif
 	}
 
 	return 0;

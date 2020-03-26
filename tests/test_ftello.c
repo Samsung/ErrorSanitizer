@@ -18,14 +18,14 @@
 #include "esan_wrapper.h"
 #define FPUTS_ITERATION_COUNT 100
 #define MSG_BUF_SIZE 512
-#define TEST_STRING "ab"
-#define TEST_STRING_SIZE 2 // do not use sizeof(TEST_STRING), it includes '\0'
 
 int main()
 {
 	unsigned fputs_it;
 	FILE *pFile;
 	long file_start_pos, file_end_pos;
+	static const char test_string[] = "ab";
+	long test_string_size = sizeof(test_string) - 1;
 
 	pFile = fopen("ftell.test", "wb");
 	if (pFile == NULL)
@@ -35,11 +35,21 @@ int main()
 	file_start_pos = ftello(pFile);
 	if (file_start_pos == -1) {
 		fclose(pFile);
+#ifdef ESAN_FAIL_TEST
+		log("ftello failed successfully.");
+#else
 		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
-			     "ftell FAILED.");
+			     "ftello FAILED.");
+#endif
+	} else {
+#ifdef ESAN_FAIL_TEST
+		fclose(pFile);
+		exit_failure(ESAN_TESTS_FAILURE,
+			     "ftello should have failed, but didn't.");
+#endif
 	}
 	for (fputs_it = 0; fputs_it < FPUTS_ITERATION_COUNT; ++fputs_it) {
-		if (fputs(TEST_STRING, pFile) < 0) {
+		if (fputs(test_string, pFile) < 0) {
 			fclose(pFile);
 			exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
 				     "fputs FAILED.");
@@ -52,13 +62,13 @@ int main()
 			     "ftell FAILED.");
 	}
 	if (file_end_pos - file_start_pos !=
-	    TEST_STRING_SIZE * FPUTS_ITERATION_COUNT) {
+	    test_string_size * FPUTS_ITERATION_COUNT) {
 		char msgBuf[MSG_BUF_SIZE];
 		snprintf(
 			msgBuf, MSG_BUF_SIZE,
-			"Ftell position values missmatch: %ld,expected %d. ftell FAILED.",
+			"Ftell position values missmatch: %ld,expected %ld. ftell FAILED.",
 			file_end_pos - file_start_pos,
-			TEST_STRING_SIZE * FPUTS_ITERATION_COUNT);
+			test_string_size * FPUTS_ITERATION_COUNT);
 		fclose(pFile);
 		exit_failure(ESAN_TESTS_INTERNAL_ERROR, "%s", msgBuf);
 	}

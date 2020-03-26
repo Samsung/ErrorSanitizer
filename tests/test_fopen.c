@@ -21,13 +21,25 @@
 int main()
 {
 	FILE *pFile;
-	const char *test_buffer = "fopen_test_buffer";
-	size_t test_buffer_size = strlen(test_buffer);
+	static const char test_buffer[] = "fopen_test_buffer";
+	size_t test_buffer_size = sizeof(test_buffer) - 1;
 
 	pFile = fopen("fopen.test", "wb");
 	if (pFile == NULL) {
+#ifdef ESAN_FAIL_TEST
+		(void)test_buffer_size;
+		log("fopen successfully failed.");
+		return 0;
+#else
 		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
 			     "fopen FAILED.");
+#endif
+	} else {
+#ifdef ESAN_FAIL_TEST
+		fclose(pFile);
+		exit_failure(ESAN_TESTS_FAILURE,
+			     "fopen should have failed, but didn't.");
+#endif
 	}
 	if (fwrite(test_buffer, 1, test_buffer_size, pFile) !=
 	    test_buffer_size) {

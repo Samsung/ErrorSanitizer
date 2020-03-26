@@ -32,8 +32,18 @@ int main()
 	for (fputs_it = 0; fputs_it < FPUTS_ITERATION_COUNT; ++fputs_it) {
 		if (fputs("ab", pFile) < 0) {
 			fclose(pFile);
+#ifdef ESAN_FAIL_TEST
+			log("fputs successfully failed");
+#else
 			exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
 				     "fputs FAILED.");
+#endif
+		} else {
+#ifdef ESAN_FAIL_TEST
+			fclose(pFile);
+			exit_failure(ESAN_TESTS_FAILURE,
+				     "fputs should have failed, but didn't.");
+#endif
 		}
 	}
 	fclose(pFile);

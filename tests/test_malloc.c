@@ -22,10 +22,18 @@ int main()
 {
 	char *test_malloc_buffer = (char *)malloc(TEST_MEMORY_SIZE);
 	if (test_malloc_buffer) {
+#ifdef ESAN_FAIL_TEST
+		exit_failure(ESAN_TESTS_FAILURE, "malloc SUCCEEDED.");
+#else
 		test_malloc_buffer[0] = '1';
 		free(test_malloc_buffer);
+#endif
 	} else {
+#ifdef ESAN_FAIL_TEST
+		log("malloc successfully failed.");
+#else
 		exit_failure(ESAN_TESTS_INTERNAL_ERROR, "malloc FAILED.");
+#endif
 	}
 
 	return 0;

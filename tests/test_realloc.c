@@ -22,10 +22,19 @@ int main()
 {
 	char *test_realloc_buffer = (char *)realloc(NULL, TEST_MEMORY_SIZE);
 	if (test_realloc_buffer) {
+#ifdef ESAN_FAIL_TEST
+		exit_failure(ESAN_TESTS_FAILURE,
+			     "realloc should have failed, but didn't.");
+#else
 		test_realloc_buffer[0] = '1';
 		free(test_realloc_buffer);
+#endif
 	} else {
+#ifdef ESAN_FAIL_TEST
+		log("realloc successfully failed.");
+#else
 		exit_failure(ESAN_TESTS_INTERNAL_ERROR, "realloc FAILED.");
+#endif
 	}
 
 	return 0;

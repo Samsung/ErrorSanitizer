@@ -30,9 +30,21 @@ int main()
 			     "Creating temporary file failed!");
 	fclose(file);
 	/* race condition here... I know */
-	if (0 != faccessat(AT_FDCWD, path, F_OK, 0))
+	if (0 != faccessat(AT_FDCWD, path, F_OK, 0)) {
+#ifdef ESAN_FAIL_TEST
+		log("faccessat successfully failed.");
+#else
 		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
 			     "Faccessat failed!");
+#endif
+	} else {
+#ifdef ESAN_FAIL_TEST
+		exit_failure(ESAN_TESTS_FAILURE,
+			     "faccessat should have failed, but didn't.");
+#else
+		log("faccessat succeed.");
+#endif
+	}
 
 	return 0;
 }

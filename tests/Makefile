@@ -24,22 +24,22 @@ endif
 CC ?= clang
 
 CFLAGS = ${CFLAGS_LOCAL}
-LDFLAGS = ${LDFLAGS_LOCAL} #${ESAN_PATH}/error_sanitizer_preload.so
+LDFLAGS = ${LDFLAGS_LOCAL}
 
 SRC     = $(wildcard *.c)
-OBJ     = $(SRC:.c=.o)
 TESTS   = $(wildcard test_*.c)
 EXEC    = $(TESTS:.c=.elf)
+EXEC_FAIL = $(TESTS:.c=.elf.fail)
 RESULTS = $(TESTS:.c=.txt)
 
 DEPS    = Makefile
 
 ############################################################################
 
-all: $(OBJ) $(EXEC)
+all: $(OBJ) $(EXEC) $(EXEC_FAIL)
 
 clean:
-	rm -f $(OBJ) $(EXEC)
+	rm -f $(OBJ) $(EXEC) $(EXEC_FAIL)
 	$(MAKE) clean_test_files
 
 tests: $(RESULTS)
@@ -54,21 +54,30 @@ clean_test_files:
 	rm -f "ftell.test"
 	rm -f "chmod.test"
 	rm -f "fchmod.test"
+	rm -f *.cur_input
 
 ############################################################################
 
-%.o: %.c $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
+%.elf: %.c $(DEPS)
+	$(CC) -o $@ $< $(CFLAGS) $(LDFLAGS)
+
+%.elf.fail: %.c $(DEPS)
+	# ESAN_FAIL_TEST produces test binaries that should have failed, but didn't at test point
+	# e.g. test_fpen should have failed, but didn't at fopen
+	$(CC) -o $@ $< $(CFLAGS) -DESAN_FAIL_TEST $(LDFLAGS)
 
 test_openssl.elf: test_openssl.o
 	$(CC) -o $@ $^ $(LDFLAGS) -lssl -lcrypto
-
-%.elf: %.o
-	$(CC) -o $@ $^ $(LDFLAGS)
 
 %.txt: %.elf
 	# temporary map file will be modified by esan
 	cp esan_always_succeed.map "esan_always_succeed.map.$<.cur_input"
 	LD_PRELOAD=${ESAN_PATH}/error_sanitizer_preload.so ./$< "esan_always_succeed.map.$<.cur_input"
 	rm -f "esan_always_succeed.map.$<.cur_input"
-#	-AFL_USE_STDIO="YES" LD_PRELOAD=${ESAN_PATH}/error_sanitizer_preload.so ./$< < esan_always_fail.map
+#	AFL_USE_STDIO="YES" LD_PRELOAD=${ESAN_PATH}/error_sanitizer_preload.so ./$< < esan_always_succeed.map
+
+%fail.txt: %.elf.fail
+	# temporary map file will be modified by esan
+	cp "esan_fail%.map" "esan_fail%.map.cur_input"
+	LD_PRELOAD=${ESAN_PATH}/error_sanitizer_preload.so ./$< "esan_fail%.map.cur_input"
+	rm -f "esan_fail%.map.cur_input"

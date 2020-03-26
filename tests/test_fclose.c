@@ -21,14 +21,14 @@
 int main()
 {
 	FILE *pFile;
-	const char *test_buffer = "fopen_test_buffer";
+	static const char test_buffer[] = "fopen_test_buffer";
 	size_t test_buffer_size = strlen(test_buffer);
 
 	pFile = fopen("fclose.test", "wb");
-	if (pFile == NULL) {
+	if (pFile == NULL)
 		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
 			     "fopen FAILED.");
-	}
+
 	if (fwrite(test_buffer, 1, test_buffer_size, pFile) !=
 	    test_buffer_size) {
 		fclose(pFile);
@@ -36,8 +36,17 @@ int main()
 			     "fwrite FAILED.");
 	}
 	if (fclose(pFile) != 0) {
+#ifdef ESAN_FAIL_TEST
+		log("fclose successfully failed.");
+#else
 		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
 			     "fclose FAILED.");
+#endif
+	} else {
+#ifdef ESAN_FAIL_TEST
+		exit_failure(ESAN_TESTS_FAILURE,
+			     "fclose should have failed, but didn't.");
+#endif
 	}
 	return 0;
 }

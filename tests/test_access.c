@@ -22,16 +22,26 @@
 int main()
 {
 	FILE *file;
-	const char *path = "./access.test";
+	static const char path[] = "./access.test";
 	file = fopen(path, "a");
 	if (!file)
 		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
 			     "Creating temporary file failed!");
 	fclose(file);
 	/* race condition here... I know */
-	if (0 != access(path, F_OK))
+	if (0 != access(path, F_OK)) {
+#ifdef ESAN_FAIL_TEST
+		log("access successfully failed.");
+#else
 		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
 			     "Access failed!");
+#endif
+	} else {
+#ifdef ESAN_FAIL_TEST
+		exit_failure(ESAN_TESTS_FAILURE,
+			     "access should have failed, but didn't.");
+#endif
+	}
 
 	return 0;
 }

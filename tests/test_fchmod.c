@@ -26,7 +26,7 @@ int main()
 {
 	int fd;
 	FILE *file;
-	const char *path = "./fchmod.test";
+	static const char path[] = "./fchmod.test";
 	file = fopen(path, "a");
 	if (!file)
 		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
@@ -53,11 +53,21 @@ int main()
 
 	if (0 != fchmod(fd, ESAN_RW_ACCESS_OWNER)) {
 		fclose(file);
+#ifdef ESAN_FAIL_TEST
+		log("fchmod successfully failed.");
+#else
 		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
 			     "fchmod 0600 failed!");
+#endif
+	} else {
+		fclose(file);
+#ifdef ESAN_FAIL_TEST
+		exit_failure(ESAN_FAIL_TEST,
+			     "fchmod 0600 should have failed, but didn't.");
+#else
+		log("fchmod succeed.");
+#endif
 	}
-
-	fclose(file);
 
 	return 0;
 }

@@ -38,8 +38,20 @@ int main()
 	if (0 != chmod(path, 0))
 		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
 			     "chmod 0000 failed!");
-	if (0 != chmod(path, ESAN_RW_ACCESS_OWNER))
+	if (0 != chmod(path, ESAN_RW_ACCESS_OWNER)) {
+#ifdef ESAN_FAIL_TEST
+		log("chmod successfully failed.");
+#else
 		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
 			     "chmod 0600 failed!");
+#endif
+	} else {
+#ifdef ESAN_FAIL_TEST
+		exit_failure(ESAN_TESTS_FAILURE,
+			     "chmod should have failed, but didn't.");
+#else
+		log("chmod succeed.");
+#endif
+	}
 	return 0;
 }

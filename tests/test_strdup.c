@@ -22,17 +22,23 @@
 
 int main()
 {
-	char test_string[] = "strdup_test_string";
+	static const char test_string[] = "strdup_test_string";
 	char *test_strdup = strdup(test_string);
-	char *test_strdup2 = strdup(test_string);
-	char *test_strdup3 = strdup(test_string);
-	free(test_strdup2);
-	free(test_strdup3);
 	if (test_strdup) {
+#ifdef ESAN_FAIL_TEST
+		free(test_strdup);
+		exit_failure(ESAN_TESTS_INTERNAL_ERROR,
+			     "strdup should have failed, but didn't.");
+#else
 		test_strdup[0] = '1';
 		free(test_strdup);
+#endif
 	} else {
+#ifdef ESAN_FAIL_TEST
+		log("strdup successfully failed.");
+#else
 		exit_failure(ESAN_TESTS_INTERNAL_ERROR, "strdup FAILED.");
+#endif
 	}
 
 	return 0;

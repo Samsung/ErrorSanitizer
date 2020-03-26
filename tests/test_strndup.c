@@ -20,14 +20,23 @@
 
 int main()
 {
-	char test_string[] = "strndup_test_string";
-
+	static const char test_string[] = "strndup_test_string";
 	char *test_strndup = strndup(test_string, sizeof(test_string));
 	if (test_strndup) {
+#ifdef ESAN_FAIL_TEST
+		free(test_strndup);
+		exit_failure(ESAN_TESTS_FAILURE,
+			     "strndup should have failed, but didn't.");
+#else
 		test_strndup[0] = '1';
 		free(test_strndup);
+#endif
 	} else {
+#ifdef ESAN_FAIL_TEST
+		log("strndup successfully failed.");
+#else
 		exit_failure(ESAN_TESTS_INTERNAL_ERROR, "strndup FAILED.");
+#endif
 	}
 	return 0;
 }
