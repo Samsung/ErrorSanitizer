@@ -37,6 +37,7 @@ int main()
 		fclose(pFile);
 #ifdef ESAN_FAIL_TEST
 		log("ftello failed successfully.");
+		return 0;
 #else
 		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
 			     "ftello FAILED.");

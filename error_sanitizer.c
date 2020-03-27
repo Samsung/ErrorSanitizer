@@ -76,6 +76,7 @@ read_file(const char *file_path, char **file_contents, size_t *output_size)
 			return ESAN_LIBRARY_FUNCTION_ERROR;
 		}
 	}
+	fclose(fp);
 	*file_contents = buffer;
 	*output_size = bytes_read;
 	return ESAN_SUCCESS;
@@ -295,6 +296,7 @@ write_test_input_data(const char *original_file_path, char *test_data_ptr,
 	if (fclose(fp)) {
 		log("Unable to write: %ld bytes to: \"%s\" file.",
 		    test_data_size, tmp_file_path);
+		free(tmp_file_path);
 		return ESAN_LIBRARY_FUNCTION_ERROR;
 	}
 	log("Input file written: %ld bytes.", written_data_size);

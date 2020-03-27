@@ -65,9 +65,11 @@ static void parse_file()
 
 	// compile regular expression
 	ret_code = regcomp(&compiledReg, library_exclusion_regex, REG_EXTENDED);
-	if (ret_code != 0)
+	if (ret_code != 0) {
+		fclose(fp);
 		exit_failure(ESAN_LIBRARY_FUNCTION_ERROR,
 			     "Failed to compile regular expression pattern.");
+	}
 
 	while (fgets(line, MAX_LINE_LENGHT, fp) != NULL) {
 		ret_code = regexec(&compiledReg, line, 0, NULL, 0);
@@ -76,40 +78,47 @@ static void parse_file()
 		if (ret_code)
 			continue;
 		// find - character separating memory start,end values
-		while (line[end_mem_offset] != '-' &&
-		       end_mem_offset < MAX_LINE_LENGHT)
+		while (end_mem_offset < MAX_LINE_LENGHT &&
+		       line[end_mem_offset] != '-')
 			++end_mem_offset;
 
-		if (end_mem_offset - 1 >= MAX_LINE_LENGHT)
+		if (end_mem_offset >= MAX_LINE_LENGHT) {
+			fclose(fp);
 			exit_failure(
 				ESAN_INTERNAL_ERROR,
 				"Could not find \"-\" character in %d line",
 				line_it);
+		}
 
 		line[end_mem_offset] = '\0';
 
 		// parse library start address
 		lib_addr.start =
 			strtoul(line, &strtoul_end_offset, HEX_NUMBER_BASE);
-		if (strtoul_end_offset == line)
+		if (strtoul_end_offset == line) {
+			fclose(fp);
 			exit_failure(
 				ESAN_INTERNAL_ERROR,
 				"Unable to parse start memory of %d line.\n",
 				line_it);
+		}
 
 		// parse library end address
 		lib_addr.end = strtoul(line + end_mem_offset + 1,
 				       &strtoul_end_offset, HEX_NUMBER_BASE);
-		if (strtoul_end_offset == line + end_mem_offset + 1)
+		if (strtoul_end_offset == line + end_mem_offset + 1) {
+			fclose(fp);
 			exit_failure(ESAN_INTERNAL_ERROR,
 				     "Unable to parse end memory of %d line.\n",
 				     line_it);
+		}
 
 		// add library address to array
 		add_new_library(&lib_addr);
 
 		++line_it;
 	}
+	fclose(fp);
 	regfree(&compiledReg);
 }
 
