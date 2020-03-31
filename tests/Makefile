@@ -37,6 +37,7 @@ RESULTS += test_access.fail.txt test_calloc.fail.txt test_chmod.fail.txt test_fa
 RESULTS += test_fchmod.fail.txt test_fclose.fail.txt test_fopen.fail.txt test_fputs.fail.txt
 RESULTS += test_ftell.fail.txt test_ftello.fail.txt test_malloc.fail.txt test_realloc.fail.txt
 RESULTS += test_rewind.fail.txt test_strdup.fail.txt test_strndup.fail.txt
+RESULTS += test_tmpfile.fail.txt
 
 ############################################################################
 

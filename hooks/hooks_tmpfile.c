@@ -13,45 +13,34 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
-    Author: Ernest Borowski <e.borowski@samsung.com>
     Author: Mateusz Nosek <m.nosek@samsung.com>
 */
-#ifndef ESAN_STATS_H_
-#define ESAN_STATS_H_
+#include "hooks_include.h"
 
-enum ESAN_FUNCTIONS_E {
-	ESAN_CALLOC,
-	ESAN_MALLOC,
-	ESAN_REALLOC,
-	ESAN_STRDUP,
-	ESAN_STRNDUP,
-	ESAN_FOPEN,
-	ESAN_FCLOSE,
-	ESAN_FWRITE,
-	ESAN_FPUTS,
-	ESAN_REWIND,
-	ESAN_FTELL,
-	ESAN_FTELLO,
-	ESAN_ACCESS,
-	ESAN_FACCESSAT,
-	ESAN_CHMOD,
-	ESAN_FCHMOD,
-	ESAN_TMPFILE,
-#ifndef ESAN_DISABLE_HOOKS_OPENSSL
-	ESAN_EVP_CIPHER_CTX_NEW,
-	ESAN_EVP_MD_CTX_CREATE,
-#endif /* ESAN_DISABLE_HOOKS_OPENSSL */
-	ESAN_LAST_FUNCTION, /* End marker. */
-	ESAN_NR_FUNCTIONS /* Counts how many functions are defined. */
-};
+/* FILE *tmpfile(void); */
 
-enum ESAN_FAILURE_E {
-	ESAN_SUCCEED,
-	ESAN_FAIL,
-};
+typedef FILE *(*tmpfile_func_t)(void);
 
-void add_execution(enum ESAN_FUNCTIONS_E fun_name,
-		   enum ESAN_FAILURE_E fail_status);
-void esan_print_stats(void);
+static FILE *real_tmpfile(void)
+{
+	static tmpfile_func_t tmpfile_func_ptr = NULL;
+	if (NULL == tmpfile_func_ptr)
+		tmpfile_func_ptr = (tmpfile_func_t)dlsym(RTLD_NEXT, "tmpfile");
+	if (NULL != tmpfile_func_ptr)
+		return (*tmpfile_func_ptr)();
 
-#endif /* ESAN_STATS_H_ */
+	exit_failure(ESAN_DLSYM_ERROR,
+		     "Error in dlsym - in 'tmpfile' wrapper\n");
+}
+
+// parameter names starting with __ are reserved for standard library
+// NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name)
+FILE *tmpfile(void)
+{
+	if (esan_should_I_fail(__builtin_return_address(0), ESAN_TMPFILE)) {
+		errno = ENFILE;
+		return NULL;
+	} else {
+		return real_tmpfile();
+	}
+}
