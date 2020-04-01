@@ -96,6 +96,7 @@ static enum ESAN_ERROR_CODE_E parse_env()
 	env_array = malloc(sizeof(char *) * env_array_len);
 	if (!env_array) {
 		free(env_buffer);
+		env_buffer = NULL;
 		log("Unable to allocate: %ldb memory for environment array pointers.",
 		    sizeof(char) * env_array_len);
 		return ESAN_LIBRARY_FUNCTION_ERROR;
@@ -108,6 +109,7 @@ static enum ESAN_ERROR_CODE_E parse_env()
 					    sizeof(char *) * env_array_len * 2);
 			if (!env_array) {
 				free(env_buffer);
+				env_buffer = NULL;
 				log("Unable to reallocate: %ldb memory for environment array pointers.",
 				    sizeof(char *) * env_array_len * 2);
 				return ESAN_LIBRARY_FUNCTION_ERROR;
@@ -120,6 +122,9 @@ static enum ESAN_ERROR_CODE_E parse_env()
 	}
 	if (env_array_it == 0) {
 		free(env_buffer);
+		free(env_array);
+		env_array = NULL;
+		env_buffer = NULL;
 		return ESAN_INTERNAL_ERROR;
 	}
 	return ESAN_SUCCESS;
