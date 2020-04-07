@@ -48,6 +48,7 @@ static const char *const ESAN_FUNCTION_NAMES[ESAN_NR_FUNCTIONS] = {
 	"chmod",
 	"fchmod",
 	"tmpfile",
+	"tmpnam",
 #ifndef ESAN_DISABLE_HOOKS_OPENSSL
 	"EVP_CIPHER_CTX_new",
 	"EVP_MD_CTX_create"

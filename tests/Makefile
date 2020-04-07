@@ -37,7 +37,7 @@ RESULTS += test_access.fail.txt test_calloc.fail.txt test_chmod.fail.txt test_fa
 RESULTS += test_fchmod.fail.txt test_fclose.fail.txt test_fopen.fail.txt test_fputs.fail.txt
 RESULTS += test_ftell.fail.txt test_ftello.fail.txt test_malloc.fail.txt test_realloc.fail.txt
 RESULTS += test_rewind.fail.txt test_strdup.fail.txt test_strndup.fail.txt
-RESULTS += test_tmpfile.fail.txt
+RESULTS += test_tmpfile.fail.txt test_tmpnam.fail.txt test_tmpnam_null.fail.txt
 
 ############################################################################
 
@@ -97,6 +97,13 @@ endif
 	cp esan_always_succeed.map "esan_always_succeed.map.$<.cur_input"
 	LD_PRELOAD=${ESAN_PATH}/error_sanitizer_preload.so ./$< "esan_always_succeed.map.$<.cur_input"
 	rm -f "esan_always_succeed.map.$<.cur_input"
+
+test_tmpnam_null.fail.txt: esan_fail.test_tmpnam_null.map test_tmpnam_null.elf.fail
+	cp "$<" "$<.cur_input"
+	LD_PRELOAD=${ESAN_PATH}/error_sanitizer_preload.so ./$(word 2,$^) "$<.cur_input" 2>&1 \
+	| grep -vE '^(in_library|error_sanitizer)\.c' \
+	| grep -vE "^hooks_tmpnam.c | tmpnam:4(2|4) | tmpnam with s == NULL is unsafe in multi-thread context" -
+	rm -f "$<.cur_input"
 
 test_rewind.fail.txt: esan_fail.test_rewind.map test_rewind.elf.fail
 	cp "$<" "$<.cur_input"
