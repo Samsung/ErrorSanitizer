@@ -47,6 +47,9 @@ before_script:
     docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN "$GITLAB_REPO_URL" ||
     docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN "$GITLAB_REPO_URL"
 
+after_script:
+  - docker system prune -f
+
 Build:
   stage: build
   script:
