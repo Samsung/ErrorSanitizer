@@ -38,6 +38,7 @@ RESULTS += test_fchmod.fail.txt test_fclose.fail.txt test_fopen.fail.txt test_fp
 RESULTS += test_ftell.fail.txt test_ftello.fail.txt test_malloc.fail.txt test_realloc.fail.txt
 RESULTS += test_rewind.fail.txt test_strdup.fail.txt test_strndup.fail.txt
 RESULTS += test_tmpfile.fail.txt test_tmpnam.fail.txt test_tmpnam_null.fail.txt
+RESULTS += test_freopen.fail.txt
 
 ############################################################################
 
@@ -59,6 +60,8 @@ clean_test_files:
 	rm -f "ftell.test"
 	rm -f "chmod.test"
 	rm -f "fchmod.test"
+	rm -f "freopen.test"
+	rm -f "freopen2.test"
 	rm -f *.cur_input
 
 ############################################################################
