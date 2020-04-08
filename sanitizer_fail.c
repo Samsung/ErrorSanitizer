@@ -25,9 +25,13 @@
 
 void esan_fail_message(const char *function_name)
 {
+#ifndef AFL
 	fflush(stdout);
 	fprintf(stderr, "====: ErrorSanitizer: Injected failure at %s\n",
 		function_name);
+#else
+	(void)function_name;
+#endif
 }
 
 static unsigned long esan_total_execs = 0;

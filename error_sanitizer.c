@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "error_sanitizer.h"
@@ -81,6 +82,41 @@ read_file(const char *file_path, char **file_contents, size_t *output_size)
 	*output_size = bytes_read;
 	return ESAN_SUCCESS;
 }
+
+#ifdef CP_WRONG_MAP
+static enum ESAN_ERROR_CODE_E
+write_file(const char *file_path, char *file_contents, size_t output_size)
+{
+	if (access(file_path, F_OK) != -1) {
+		log("file: %s, already exist.", file_path);
+		return ESAN_INTERNAL_ERROR;
+	}
+	FILE *fp = fopen(file_path, "w");
+	size_t written_size = 0, current_written_size;
+	if (!fp) {
+		log("Unable to open %s file for write.", file_path);
+		return ESAN_LIBRARY_FUNCTION_ERROR;
+	}
+	while (written_size < output_size) {
+		current_written_size = fwrite(file_contents + written_size,
+					      output_size - written_size, 1,
+					      fp);
+		if (current_written_size == 0) {
+			log("unable to write: %ld size to %s file.",
+			    current_written_size, file_path);
+			fclose(fp);
+			return ESAN_LIBRARY_FUNCTION_ERROR;
+		}
+		written_size += current_written_size;
+	}
+	if (fclose(fp) != 0) {
+		log("Uanble to close file: %s with %ld size.", file_path,
+		    written_size);
+		return ESAN_LIBRARY_FUNCTION_ERROR;
+	}
+	return ESAN_SUCCESS;
+}
+#endif
 
 static enum ESAN_ERROR_CODE_E parse_env()
 {
@@ -321,13 +357,18 @@ static enum ESAN_ERROR_CODE_E find_bitmap_splitting_point(char *bitmap,
 							  char **spliting_point)
 {
 	size_t bitmap_it = 0;
+	char tmp;
 	for (; bitmap_it + SPLIT_STRING_SIZE < bitmap_size; ++bitmap_it) {
+		tmp = bitmap[bitmap_it + SPLIT_STRING_SIZE];
+		bitmap[bitmap_it + SPLIT_STRING_SIZE] = '\0';
 		if (strncmp(bitmap + bitmap_it, SPLIT_STRING,
 			    bitmap_size - bitmap_it) == 0) {
+			bitmap[bitmap_it + SPLIT_STRING_SIZE] = tmp;
 			*spliting_point =
 				bitmap + bitmap_it + SPLIT_STRING_SIZE;
 			return ESAN_SUCCESS;
 		}
+		bitmap[bitmap_it + SPLIT_STRING_SIZE] = tmp;
 	}
 	return ESAN_INTERNAL_ERROR;
 }
@@ -337,6 +378,9 @@ void parse_map(void)
 	char *bitmap_path, *bitmap_path_to_free = NULL;
 	char *after_split_prt = 0;
 	enum ESAN_ERROR_CODE_E ret_code;
+#if CP_WRONG_MAP
+	static int srand_initialized = 0;
+#endif
 	log("Start map parsing.");
 	if (parse_env() != ESAN_SUCCESS) {
 		parse_map_cleanup();
@@ -373,6 +417,17 @@ void parse_map(void)
 						       &after_split_prt);
 		if (ret_code != ESAN_SUCCESS) {
 			free(bitmap_path_to_free);
+#ifdef CP_WRONG_MAP
+			if (srand_initialized == 0) {
+				srand(time(NULL));
+				srand_initialized = 1;
+			}
+			char buff[64];
+			snprintf(buff, sizeof(buff), "/tmp/esan_debug%d.txt",
+				 rand());
+			(void)write_file(buff, esan_error_bitmap,
+					 esan_error_bitmap_size);
+#endif
 			parse_map_cleanup();
 			exit_failure(
 				ret_code,

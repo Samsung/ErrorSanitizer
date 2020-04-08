@@ -79,8 +79,9 @@ typedef void (*exit_func_t)(int status);
 void exit(int status)
 {
 	static exit_func_t exit_func_ptr = NULL;
-
+#ifndef AFL
 	esan_print_stats();
+#endif
 
 	if (NULL == exit_func_ptr)
 		exit_func_ptr = (exit_func_t)dlsym(RTLD_NEXT, "exit");

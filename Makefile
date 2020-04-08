@@ -23,12 +23,21 @@ HOOK_PATH = ${ESAN_PATH}/hooks
 LIB_PATH = ${ESAN_PATH}/in_library
 SYSROOT = ${LIB_PATH}/sysroot
 
-FAIL_CHANCE ?= 70
 CC ?= clang
 OBJCOPY	:= $(shell which objcopy)
 
 INCLUDE_FLAGS = -I${ESAN_PATH}/include
 # Shared CFLAGS between library and other components
+# Additional defines:
+# -DAFL - disable logging:
+#  on failure exit
+#  on failure inhection
+#  statistics on exit
+#
+# -DCP_WRONG_MAP - enable copying maps with wrong format to /tmp/esan_debug%d.txt
+#  where %d is random int, useful for debugging
+#
+# -DDEBUG - enable additional debug logging
 CFLAGS_SHARED = ${INCLUDE_FLAGS} -fPIC -Wall -Wextra -Werror -std=gnu89
 # CFLAGS for other components
 CFLAGS = $(CFLAGS_LOCAL) ${CFLAGS_SHARED}
@@ -81,7 +90,8 @@ error_sanitizer_preload.so: $(ESAN_INIT_OBJ_API) $(HOOK_OBJ) $(LIB_OBJ)
 		$(LDFLAGS_LIB)
 
 clean: hook_clean test_clean lib_clean
-	rm -f $(LIBS) $(HOOK_OBJ)
+	rm -f $(LIBS) $(HOOK_OBJ) $(ESAN_INIT_OBJ) $(ESAN_INIT_OBJ_LINKED) $(ESAN_INIT_OBJ_HIDDEN) \
+		$(ESAN_INIT_OBJ_API)
 
 hook: ${HOOK_PATH}/hooks.o
 

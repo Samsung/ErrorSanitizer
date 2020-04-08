@@ -21,8 +21,10 @@
 
 always_inline void fail_common(void)
 {
+#ifndef AFL
 	void *x;
 
 	x = __builtin_return_address(0);
 	fprintf(stderr, "return address: %p\n", x);
+#endif
 }

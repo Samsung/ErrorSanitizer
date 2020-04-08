@@ -27,6 +27,12 @@ enum ESAN_ERROR_CODE_E {
 	ESAN_INVALID_ARGUMENT = 3
 };
 
+#ifdef AFL
+#define exit_failure(err_code, message, args...) \
+	do {                                     \
+		exit(err_code);                  \
+	} while (0)
+#else
 #define exit_failure(err_code, message, args...)                         \
 	do {                                                             \
 		fprintf(stderr, "%s | %s:%d | ", __FILE__, __FUNCTION__, \
@@ -36,10 +42,10 @@ enum ESAN_ERROR_CODE_E {
 		fflush(stderr);                                          \
 		exit(err_code);                                          \
 	} while (0)
+#endif
 
 #define exit_success(message, args...) \
 	exit_failure(ESAN_SUCCESS, message, ##args)
-
 #ifdef DEBUG
 #define log(message, args...)                                            \
 	do {                                                             \

@@ -36,10 +36,10 @@ DEPS    = Makefile
 
 ############################################################################
 
-all: $(OBJ) $(EXEC) $(EXEC_FAIL)
+all: $(EXEC) $(EXEC_FAIL)
 
 clean:
-	rm -f $(OBJ) $(EXEC) $(EXEC_FAIL)
+	rm -f $(EXEC) $(EXEC_FAIL)
 	$(MAKE) clean_test_files
 
 tests: $(RESULTS)
