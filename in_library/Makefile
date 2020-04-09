@@ -36,11 +36,11 @@ all: $(LINKED_NAME_API)
 
 $(CONFIGURE_MUSL_SYNC_FILE):
 	mkdir -p sysroot
-	cd musl && CC="$(CC) -fPIC" ./configure --prefix=$(SYSROOT) --disable-shared && \
+	cd musl && CFLAGS="" CC="$(CC) -fPIC" ./configure --prefix=$(SYSROOT) --disable-shared && \
 		touch $(CONFIGURE_MUSL_SYNC_FILE)
 
 build-musl: $(CONFIGURE_MUSL_SYNC_FILE)
-	cd musl && make -j$(shell nproc)
+	cd musl && CFLAGS="" make -j$(shell nproc)
 
 install-musl: build-musl
 	mkdir -p $(SYSROOT)
