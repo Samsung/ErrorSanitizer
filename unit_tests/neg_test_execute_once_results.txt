@@ -7,5 +7,5 @@ Error Sanitizer stats
  TOTAL              |        0 |               0
 --------------------|----------|-----------------
 error_sanitizer_preload.c | lib_init:34 | lib_init called 2 times.
-esan_stats.c | esan_print_stats:76 | esan_print_stats called 2 times.
+esan_stats.c | esan_print_stats:79 | esan_print_stats called 2 times.
 error_sanitizer_preload.c | lib_exit:51 | lib_exit called 2 times.
