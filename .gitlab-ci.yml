@@ -27,6 +27,7 @@ stages:
   - push
   - code-analize
   - test
+  - build-release-img
   #- analize-build-scan
   #- analize-clang-tidy
   #- analize-clang-format
@@ -66,6 +67,7 @@ Build:
       --build-arg VCS_URL=$CI_PROJECT_URL
       --cache-from $CI_REGISTRY_IMAGE:latest
       --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+      --file ./ci/Dockerfile
       .
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
 
@@ -87,6 +89,21 @@ Push latest:
     - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:latest
     # Annnd we push it.
     - docker push $CI_REGISTRY_IMAGE:latest
+
+Build-Release-Img:
+  stage: build-release-img
+  script:
+    # builds the project, passing proxy variables, and vcs vars for LABEL
+    # the built image is tagged locally with the commit SHA, and then pushed to
+    # the GitLab registry
+    - >
+      docker build
+      --pull
+      --build-arg VCS_REF=${CI_COMMIT_SHA}-rel
+      --build-arg VCS_URL=$CI_PROJECT_URL
+      --tag ${CI_REGISTRY_IMAGE}-rel:$CI_COMMIT_SHA
+      --file ./Dockerfile
+      .
 
 Check-trailing-whitespace:
   stage: code-analize
