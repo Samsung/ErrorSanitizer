@@ -65,9 +65,10 @@ rebuild: clean
 	$(MAKE) all
 
 run: ev
-	cd $(TEST_PATH) && ESAN_PATH=$(ESAN_PATH) $(MAKE) tests
+	cd $(TEST_PATH) && ESAN_PATH=$(ESAN_PATH) CFLAGS_LOCAL="${CFLAGS}" \
+		LDFLAGS_LOCAL="${LDFLAGS}" CC=${CC} $(MAKE) tests
 
-ev: hook $(LIBS) test
+ev: hook $(LIBS)
 
 $(ESAN_INIT_OBJ): error_sanitizer.c $(LIB_OBJ)
 	$(CC) -nostdinc --sysroot=$(SYSROOT) -I$(SYSROOT)/include -c ${CFLAGS} $<
