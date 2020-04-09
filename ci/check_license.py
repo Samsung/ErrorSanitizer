@@ -1,4 +1,4 @@
-#!/bin/python3
+#!/usr/bin/env python3
 # Copyright (c) 2018 - 2020, Samsung Electronics Co., Ltd. All rights reserved.
 #
 # This program is free software; you can redistribute it and/or modify

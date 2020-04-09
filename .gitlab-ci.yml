@@ -105,6 +105,15 @@ Build-Release-Img:
       --file ./Dockerfile
       .
 
+Check-license:
+  stage: code-analize
+  dependencies:
+    - Build
+  script:
+    - echo "pull docker img && run license check"
+    - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - docker run $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA python3 /errorsanitizer/ci/check_license.py
+
 Check-trailing-whitespace:
   stage: code-analize
   dependencies:
