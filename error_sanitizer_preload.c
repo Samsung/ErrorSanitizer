@@ -72,25 +72,6 @@ void esan_print_stats(void)
 	       esan_all_failed_executions);
 	printf("--------------------|----------|-----------------\n");
 }
-/* void exit(int status); */
-typedef void (*exit_func_t)(int status);
-
-/* Wrapper for exit() function that displays ESAN stats on exit */
-void exit(int status)
-{
-	static exit_func_t exit_func_ptr = NULL;
-#ifndef AFL
-	esan_print_stats();
-#endif
-
-	if (NULL == exit_func_ptr)
-		exit_func_ptr = (exit_func_t)dlsym(RTLD_NEXT, "exit");
-	if (NULL != exit_func_ptr)
-		(*exit_func_ptr)(status);
-
-	fputs("Error in dlsym - in 'exit' wrapper\n", stderr);
-	abort();
-}
 
 void lib_init(void)
 {
@@ -101,5 +82,8 @@ void lib_init(void)
 
 void lib_exit(void)
 {
+#ifndef AFL
+	esan_print_stats();
+#endif
 	parse_map_cleanup();
 }
