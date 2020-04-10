@@ -44,5 +44,7 @@ COPY . /errorsanitizer/
 
 WORKDIR /errorsanitizer
 
+RUN make
+
 CMD bash ci.sh #executes during docker run
 
