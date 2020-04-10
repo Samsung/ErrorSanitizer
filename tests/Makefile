@@ -39,7 +39,7 @@ RESULTS += test_ftell.fail.txt test_ftello.fail.txt test_malloc.fail.txt test_re
 RESULTS += test_rewind.fail.txt test_strdup.fail.txt test_strndup.fail.txt
 RESULTS += test_tmpfile.fail.txt test_tmpnam.fail.txt test_tmpnam_null.fail.txt
 RESULTS += test_fseek.fail.txt test_fgetpos.fail.txt test_fsetpos.fail.txt
-RESULTS += test_freopen.fail.txt
+RESULTS += test_freopen.fail.txt test_setbuf.fail.txt
 
 ############################################################################
 
@@ -116,7 +116,17 @@ test_rewind.fail.txt: esan_fail.test_rewind.map test_rewind.elf.fail
 	|grep -vE '^(in_library|error_sanitizer)\.c' - | diff test_rewind_neg_results.txt -
 	rm -f "$<.cur_input"
 
+test_setbuf.fail.txt: esan_fail.test_setbuf.map test_setbuf.elf.fail
+	cp "$<" "$<.cur_input"
+	LD_PRELOAD=${ESAN_PATH}/error_sanitizer_preload.so ./$(word 2,$^) "$<.cur_input" 2>&1 \
+	| grep -vE "^hooks_setbuf\.c | setbuf:43 | setbuf is obsolete function - use setvbuf instead" - \
+	| grep -vE '^(in_library|error_sanitizer)\.c' - | diff test_setbuf_neg_results.txt -
+	rm -f "$<.cur_input"
+
 %.fail.txt: esan_fail.%.map %.elf.fail
 	cp "$<" "$<.cur_input"
 	LD_PRELOAD=${ESAN_PATH}/error_sanitizer_preload.so ./$(word 2,$^) "$<.cur_input"
 	rm -f "$<.cur_input"
+
+
+

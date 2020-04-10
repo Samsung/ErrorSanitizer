@@ -53,6 +53,7 @@ static const char *const ESAN_FUNCTION_NAMES[ESAN_NR_FUNCTIONS] = {
 	"fseek",
 	"fgetpos",
 	"fsetpos",
+	"setbuf",
 #ifndef ESAN_DISABLE_HOOKS_OPENSSL
 	"EVP_CIPHER_CTX_new",
 	"EVP_MD_CTX_create"
