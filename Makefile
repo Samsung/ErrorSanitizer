@@ -49,7 +49,7 @@ LDFLAGS_LIB = $(LDFLAGS_LIB_LOCAL) -shared -ldl
 HOOK_OBJ = ${HOOK_PATH}/hooks.o
 LIB_OBJ = ${LIB_PATH}/in_library_api.o
 
-PRELOAD_SRC     = error_sanitizer_preload.c sanitizer_fail.c
+PRELOAD_SRC     = error_sanitizer_preload.c sanitizer_fail.c esan_fail.c
 
 ESAN_INIT_OBJ := error_sanitizer.o
 ESAN_INIT_OBJ_LINKED := error_sanitizer_linked.o

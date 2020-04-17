@@ -29,7 +29,6 @@
 #include "log.h"
 
 #define MAX_LINE_LENGHT (32 * 4096ul)
-int esan_always_succeed = 1;
 char *esan_error_bitmap = NULL;
 size_t esan_error_bitmap_size = 0;
 

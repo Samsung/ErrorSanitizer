@@ -17,8 +17,9 @@
     Author: Jakub Botwicz <j.botwicz@samsung.com>
     Author: Mateusz Nosek <m.nosek@samsung.com>
 */
-#include "hooks_include.h"
+#include "esan_fail.h"
 #include "error_sanitizer_preload.h"
+#include "hooks_include.h"
 #include "in_library.h"
 
 struct stats obj_stats[ESAN_NR_FUNCTIONS];
@@ -77,7 +78,7 @@ void lib_init(void)
 {
 	parse_map();
 	in_library_initialize();
-	esan_always_succeed = 0;
+	esan_enable_map_based_failure();
 }
 
 void lib_exit(void)

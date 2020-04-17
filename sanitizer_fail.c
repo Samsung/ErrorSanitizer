@@ -18,6 +18,7 @@
 */
 #include "attributes.h"
 #include "error_sanitizer.h"
+#include "esan_fail.h"
 #include "in_library.h"
 
 #include <stdio.h>
@@ -37,14 +38,11 @@ void esan_fail_message(const char *function_name)
 static unsigned long esan_total_execs = 0;
 
 #define BITS_PER_BYTE 8
-static unsigned int internal_fail(void)
+static unsigned int get_failure_status_from_map(void)
 {
 	unsigned int index_byte = esan_total_execs / BITS_PER_BYTE;
 	unsigned int index_bit = esan_total_execs % BITS_PER_BYTE;
 	++esan_total_execs;
-
-	if (esan_always_succeed)
-		return 0;
 
 	/* fail if map is to short, not to let afl cut the input */
 	if (index_byte >= esan_error_bitmap_size)
@@ -57,8 +55,13 @@ static unsigned int internal_fail(void)
 always_inline int esan_should_I_fail(void)
 {
 	const void *tmp = __builtin_return_address(0);
-	if (esan_always_succeed || in_library(tmp))
+	enum ESAN_FAILURE_STATUS_E failure_status = esan_get_failure_status();
+	if (failure_status == ESAN_ALWAYS_SUCCEED || in_library(tmp))
 		return 0;
+	if (failure_status == ESAN_ALWAYS_FAIL)
+		return 1;
 
-	return !!(internal_fail());
+	/* esan_always_succeed == ESAN_MAP_BASED_FAILURE */
+	/* Get failure status from map */
+	return !!(get_failure_status_from_map());
 }

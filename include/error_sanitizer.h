@@ -27,8 +27,8 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include "esan_fail.h"
 
-extern int esan_always_succeed;
 extern char *esan_error_bitmap;
 extern size_t esan_error_bitmap_size;
 
@@ -40,10 +40,10 @@ void parse_map_cleanup();
 #ifdef DEBUG
 #define ESAN_DEBUG(...)                                                     \
 	do {                                                                \
-		uint8_t old_esan_always_succeed = esan_always_succeed;      \
-		esan_always_succeed = 1;                                    \
+		enum ESAN_FAILURE_STATUS_E old_esan_always_succeed =        \
+			esan_get_and_disable_failure();                     \
 		fprintf(stdout, "====: ErrorSanitizer: DBG: " __VA_ARGS__); \
-		esan_always_succeed = old_esan_always_succeed;              \
+		esan_set_failure_status(old_esan_always_succeed);           \
 	} while (0)
 #else
 #define ESAN_DEBUG(...)
@@ -51,9 +51,9 @@ void parse_map_cleanup();
 
 #define ESAN_ERROR(...)                                                \
 	do {                                                           \
-		uint8_t old_esan_always_succeed = esan_always_succeed; \
-		esan_always_succeed = 1;                               \
+		enum ESAN_FAILURE_STATUS_E old_esan_always_succeed =   \
+			esan_get_and_disable_failure();                \
 		fprintf(stderr, "====: ErrorSanitizer: " __VA_ARGS__); \
-		esan_always_succeed = old_esan_always_succeed;         \
+		esan_set_failure_status(old_esan_always_succeed);      \
 	} while (0)
 #endif /* _ERROR_SANITIZER_H */
