@@ -117,7 +117,7 @@ write_file(const char *file_path, char *file_contents, size_t output_size)
 }
 #endif
 
-static enum ESAN_ERROR_CODE_E parse_env()
+static enum ESAN_ERROR_CODE_E parse_env(void)
 {
 	int ret_code;
 	char *buffer_end, *buffer_it;

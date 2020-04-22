@@ -48,7 +48,7 @@ static void add_new_library(const library_address_range_s *lib)
 		lib_addr_range[++current_address_idx] = *lib;
 }
 
-static void parse_file()
+static void parse_file(void)
 {
 	library_address_range_s lib_addr;
 	unsigned long end_mem_offset = 0;
