@@ -28,7 +28,7 @@
 #include "error_sanitizer.h"
 #include "log.h"
 
-#define MAX_LINE_LENGHT (32 * 4096ul)
+#define MAX_LINE_LENGTH (32 * 4096ul)
 char *esan_error_bitmap = NULL;
 size_t esan_error_bitmap_size = 0;
 
@@ -55,22 +55,22 @@ read_file(const char *file_path, char **file_contents, size_t *output_size)
 		log("Unable to open %s file.", file_path);
 		return ESAN_LIBRARY_FUNCTION_ERROR;
 	}
-	buffer = (char *)malloc(MAX_LINE_LENGHT);
+	buffer = (char *)malloc(MAX_LINE_LENGTH);
 	if (buffer == NULL) {
 		fclose(fp);
 		log("Unable to allocate %ldb memory for: %s file.",
-		    MAX_LINE_LENGHT, file_path);
+		    MAX_LINE_LENGTH, file_path);
 		return ESAN_LIBRARY_FUNCTION_ERROR;
 	}
 	while (!feof(fp)) {
 		current_bytes_read =
-			fread(buffer + bytes_read, 1, MAX_LINE_LENGHT, fp);
+			fread(buffer + bytes_read, 1, MAX_LINE_LENGTH, fp);
 		log("read: %ld from: %s", current_bytes_read, file_path);
 		bytes_read += current_bytes_read;
-		buffer = realloc(buffer, bytes_read + MAX_LINE_LENGHT);
+		buffer = realloc(buffer, bytes_read + MAX_LINE_LENGTH);
 		if (!buffer) {
 			log("Unable to reallocate %ldb memory for: %s file.",
-			    bytes_read + MAX_LINE_LENGHT, file_path);
+			    bytes_read + MAX_LINE_LENGTH, file_path);
 			fclose(fp);
 			free(buffer);
 			return ESAN_LIBRARY_FUNCTION_ERROR;
@@ -270,8 +270,8 @@ static char *read_data_from_file(size_t *ptr_data_size,
 
 static char *read_data_from_stdio(size_t *map_data_size)
 {
-	size_t stdin_it = SPLIT_STRING_SIZE, buff_size = MAX_LINE_LENGHT;
-	char *buff = malloc(MAX_LINE_LENGHT);
+	size_t stdin_it = SPLIT_STRING_SIZE, buff_size = MAX_LINE_LENGTH;
+	char *buff = malloc(MAX_LINE_LENGTH);
 	if (!buff) {
 		log("Unable to alocate memory for AFL input buffer.");
 		return NULL;

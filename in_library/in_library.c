@@ -23,7 +23,7 @@
 #include "log.h"
 
 #define MAX_LIB_COUNT 128ul
-#define MAX_LINE_LENGHT (32 * 4096ul)
+#define MAX_LINE_LENGTH (32 * 4096ul)
 #define HEX_NUMBER_BASE 16
 
 typedef struct library_address_range {
@@ -37,7 +37,7 @@ static const char *proc_maps_path = "/proc/self/maps";
 static const char *library_exclusion_regex =
 	"/l(ib(c|m|stdc\\+\\+|gcc_s)|d)(-[0-9.-]+)?\\.so";
 static long current_address_idx = -1;
-static char line[MAX_LINE_LENGHT];
+static char line[MAX_LINE_LENGTH];
 
 static void add_new_library(const library_address_range_s *lib)
 {
@@ -71,18 +71,18 @@ static void parse_file(void)
 			     "Failed to compile regular expression pattern.");
 	}
 
-	while (fgets(line, MAX_LINE_LENGHT, fp) != NULL) {
+	while (fgets(line, MAX_LINE_LENGTH, fp) != NULL) {
 		ret_code = regexec(&compiledReg, line, 0, NULL, 0);
 
 		// regex not matched
 		if (ret_code)
 			continue;
 		// find - character separating memory start,end values
-		while (end_mem_offset < MAX_LINE_LENGHT &&
+		while (end_mem_offset < MAX_LINE_LENGTH &&
 		       line[end_mem_offset] != '-')
 			++end_mem_offset;
 
-		if (end_mem_offset >= MAX_LINE_LENGHT) {
+		if (end_mem_offset >= MAX_LINE_LENGTH) {
 			fclose(fp);
 			exit_failure(
 				ESAN_INTERNAL_ERROR,
