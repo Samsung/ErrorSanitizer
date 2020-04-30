@@ -38,49 +38,9 @@ static const char SPLIT_STRING[] = "XXXX";
 #define TMP_EXTENSION_SIZE 5
 #define ENV_ARRAY_START_SIZE 10
 static const char afl_input_file_regex[] = "\\.cur_input$";
-static const char *proc_cmdline_path = "/proc/self/cmdline";
-static const char *proc_env_path = "/proc/self/environ";
-static size_t env_array_len = ENV_ARRAY_START_SIZE;
-static size_t env_array_it = 0;
-static char **env_array = NULL;
-static char *env_buffer = NULL;
-
-static enum ESAN_ERROR_CODE_E
-read_file(const char *file_path, char **file_contents, size_t *output_size)
-{
-	char *buffer;
-	size_t current_bytes_read, bytes_read = 0;
-	FILE *fp = fopen(file_path, "r");
-	if (!fp) {
-		log("Unable to open %s file.", file_path);
-		return ESAN_LIBRARY_FUNCTION_ERROR;
-	}
-	buffer = (char *)malloc(MAX_LINE_LENGTH);
-	if (buffer == NULL) {
-		fclose(fp);
-		log("Unable to allocate %ldb memory for: %s file.",
-		    MAX_LINE_LENGTH, file_path);
-		return ESAN_LIBRARY_FUNCTION_ERROR;
-	}
-	while (!feof(fp)) {
-		current_bytes_read =
-			fread(buffer + bytes_read, 1, MAX_LINE_LENGTH, fp);
-		log("read: %ld from: %s", current_bytes_read, file_path);
-		bytes_read += current_bytes_read;
-		buffer = realloc(buffer, bytes_read + MAX_LINE_LENGTH);
-		if (!buffer) {
-			log("Unable to reallocate %ldb memory for: %s file.",
-			    bytes_read + MAX_LINE_LENGTH, file_path);
-			fclose(fp);
-			free(buffer);
-			return ESAN_LIBRARY_FUNCTION_ERROR;
-		}
-	}
-	fclose(fp);
-	*file_contents = buffer;
-	*output_size = bytes_read;
-	return ESAN_SUCCESS;
-}
+#define CUR_INPUT_LEN (sizeof("cur_input") - 1)
+static const char *const *esan_envp = NULL;
+static char *tmp_program_data_file = NULL;
 
 #ifdef CP_WRONG_MAP
 static enum ESAN_ERROR_CODE_E
@@ -117,104 +77,31 @@ write_file(const char *file_path, char *file_contents, size_t output_size)
 }
 #endif
 
-static enum ESAN_ERROR_CODE_E parse_env(void)
-{
-	int ret_code;
-	char *buffer_end, *buffer_it;
-	size_t bytes_read;
-	ret_code = read_file(proc_env_path, &env_buffer, &bytes_read);
-	if (ret_code != ESAN_SUCCESS)
-		return ret_code;
-
-	buffer_it = env_buffer;
-	buffer_end = env_buffer + bytes_read;
-	env_array = malloc(sizeof(char *) * env_array_len);
-	if (!env_array) {
-		free(env_buffer);
-		env_buffer = NULL;
-		log("Unable to allocate: %ldb memory for environment array pointers.",
-		    sizeof(char) * env_array_len);
-		return ESAN_LIBRARY_FUNCTION_ERROR;
-	}
-	env_array_it = 0;
-	while (buffer_it < buffer_end) {
-		env_array[env_array_it++] = buffer_it;
-		if (env_array_it == env_array_len - 1) {
-			env_array = realloc(env_array,
-					    sizeof(char *) * env_array_len * 2);
-			if (!env_array) {
-				free(env_buffer);
-				env_buffer = NULL;
-				log("Unable to reallocate: %ldb memory for environment array pointers.",
-				    sizeof(char *) * env_array_len * 2);
-				return ESAN_LIBRARY_FUNCTION_ERROR;
-			}
-			env_array_len *= 2;
-		}
-		// skip until next '\0' delimiter
-		while (buffer_it < buffer_end && *buffer_it++)
-			;
-	}
-	if (env_array_it == 0) {
-		free(env_buffer);
-		free(env_array);
-		env_array = NULL;
-		env_buffer = NULL;
-		return ESAN_INTERNAL_ERROR;
-	}
-	return ESAN_SUCCESS;
-}
-
-static char *esan_getenv(const char *env)
-{
-	size_t it = 0;
-	for (; it < env_array_it; ++it) {
-		if (strncmp(env, env_array[it], strlen(env)) == 0)
-			return env_array[it];
-	}
-	return NULL;
-}
-
-static char *find_bitmap_filepath()
+static char *find_bitmap_filepath(int argc, char **argv, int *result_it)
 {
 	int ret_code;
 	char *result;
 	regex_t compiledReg;
-	char *buffer, *buffer_it, *buffer_end;
-	size_t bytes_read = 0;
-	ret_code = read_file(proc_cmdline_path, &buffer, &bytes_read);
+	int it = 0;
 
-	if (ret_code != ESAN_SUCCESS) {
-		return NULL;
-	}
 	ret_code = regcomp(&compiledReg, afl_input_file_regex, REG_EXTENDED);
 	if (ret_code != 0) {
-		free(buffer);
 		log("Failed to compile regular expression pattern.");
 		return NULL;
 	}
 
 	// process each cmdline argument
-	buffer_it = buffer;
-	buffer_end = buffer + bytes_read;
-	log("Processing %ld bytes.", bytes_read);
-	while (buffer_it < buffer_end) {
-		ret_code = regexec(&compiledReg, buffer_it, 0, NULL, 0);
+	for (it = 0; it < argc; ++it) {
+		ret_code = regexec(&compiledReg, argv[it], 0, NULL, 0);
 		//regex matched
 		if (!ret_code) {
-			result = strdup(buffer_it);
-			if (result) {
-				free(buffer);
-				regfree(&compiledReg);
-				log("Found input filepath: \"%s\".", result);
-				return result;
-			}
+			result = argv[it];
+			*result_it = it;
+			regfree(&compiledReg);
+			log("Found input filepath: \"%s\".", result);
+			return result;
 		}
-		// skip until next '\0' delimiter
-		while (buffer_it < buffer_end && *buffer_it++)
-			;
 	}
-	free(buffer);
 	regfree(&compiledReg);
 	log("AFL input filepath not found.");
 	return NULL;
@@ -372,50 +259,76 @@ static enum ESAN_ERROR_CODE_E find_bitmap_splitting_point(char *bitmap,
 	return ESAN_INTERNAL_ERROR;
 }
 
-void parse_map(void)
+static const char *esan_getenv(const char *env)
 {
-	char *bitmap_path, *bitmap_path_to_free = NULL;
+	const char *const *tmp_envp = esan_envp;
+	while (*tmp_envp) {
+		if (strncmp(env, *tmp_envp, strlen(env)) == 0) {
+			return *tmp_envp;
+		}
+		++tmp_envp;
+	}
+	return NULL;
+}
+
+void parse_map(int argc, char **argv, const char *const *envp)
+{
+	esan_envp = envp;
+	char *bitmap_path, *program_data_path;
 	char *after_split_prt = 0;
 	enum ESAN_ERROR_CODE_E ret_code;
+	int bitmap_filepath_pos = -1;
 #if CP_WRONG_MAP
 	static int srand_initialized = 0;
 #endif
 	log("Start map parsing.");
-	if (parse_env() != ESAN_SUCCESS) {
-		parse_map_cleanup();
-		exit_failure(
-			ESAN_INTERNAL_ERROR,
-			"Unable to read environment variables file from procfs");
-	}
 	if (esan_getenv("AFL_USE_STDIO=")) {
 		// read map from stdio
 		esan_error_bitmap =
 			read_data_from_stdio(&esan_error_bitmap_size);
 	} else {
 		// read map + test data from file
-		bitmap_path = esan_getenv("AFL_MAP_FILEPATH=");
+		bitmap_path = (char *)esan_getenv("AFL_MAP_FILEPATH=");
 		if (bitmap_path)
 			bitmap_path += strlen("AFL_MAP_FILEPATH=");
-		else
-			bitmap_path_to_free = bitmap_path =
-				find_bitmap_filepath();
+		else {
+			bitmap_path = find_bitmap_filepath(
+				argc, argv, &bitmap_filepath_pos);
+			if (bitmap_path == NULL)
+				exit_failure(ESAN_INTERNAL_ERROR,
+					     "Unable to find input file path");
+		}
 
 		esan_error_bitmap = read_data_from_file(&esan_error_bitmap_size,
 							bitmap_path);
 		if (!esan_error_bitmap) {
-			free(bitmap_path_to_free);
 			parse_map_cleanup();
-			exit_failure(
-				ESAN_INTERNAL_ERROR,
-				"Unable to find input file path or read input data.");
+			exit_failure(ESAN_INTERNAL_ERROR,
+				     "Unable to read input data.");
 		}
+		program_data_path = (char *)esan_getenv(
+			"ESAN_WRITE_PROGRAM_DATA_TO_MAP_FILE");
+		if (program_data_path)
+			program_data_path = bitmap_path;
+		else {
+			// change file extension from .cur_input to .esn_input
+			size_t bitmap_path_size = strlen(bitmap_path);
+			argv[bitmap_filepath_pos]
+			    [bitmap_path_size - CUR_INPUT_LEN] = 'e';
+			argv[bitmap_filepath_pos]
+			    [bitmap_path_size - CUR_INPUT_LEN + 1] = 's';
+			argv[bitmap_filepath_pos]
+			    [bitmap_path_size - CUR_INPUT_LEN + 2] = 'n';
+			program_data_path = tmp_program_data_file =
+				argv[bitmap_filepath_pos];
+		}
+
 		log("Read: %ld bytes from: \"%s\" file.",
 		    esan_error_bitmap_size, bitmap_path);
 		ret_code = find_bitmap_splitting_point(esan_error_bitmap,
 						       esan_error_bitmap_size,
 						       &after_split_prt);
 		if (ret_code != ESAN_SUCCESS) {
-			free(bitmap_path_to_free);
 #ifdef CP_WRONG_MAP
 			if (srand_initialized == 0) {
 				srand(time(NULL));
@@ -437,17 +350,15 @@ void parse_map(void)
 
 		// write test data to file
 		ret_code = write_test_input_data(
-			bitmap_path, after_split_prt,
+			program_data_path, after_split_prt,
 			esan_error_bitmap_size -
 				(after_split_prt - esan_error_bitmap));
 		if (ret_code != ESAN_SUCCESS) {
-			free(bitmap_path_to_free);
 			parse_map_cleanup();
 			exit_failure(ret_code, "Unable to write test data.");
 		}
 		esan_error_bitmap_size =
 			after_split_prt - esan_error_bitmap - SPLIT_STRING_SIZE;
-		free(bitmap_path_to_free);
 	}
 	if (esan_error_bitmap == NULL || esan_error_bitmap_size == 0) {
 		parse_map_cleanup();
@@ -459,8 +370,14 @@ void parse_map(void)
 
 void parse_map_cleanup(void)
 {
+	int ret_code;
 	free(esan_error_bitmap);
-	free(env_buffer);
-	free(env_array);
+	if (tmp_program_data_file) {
+		ret_code = remove(tmp_program_data_file);
+		if (ret_code != 0)
+			exit_failure(ESAN_LIBRARY_FUNCTION_ERROR,
+				     "Unable to remove esan tmp file: %s",
+				     tmp_program_data_file);
+	}
 	esan_error_bitmap = NULL;
 }

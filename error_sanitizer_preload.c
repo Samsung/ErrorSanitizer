@@ -74,9 +74,9 @@ void esan_print_stats(void)
 	printf("--------------------|----------|-----------------\n");
 }
 
-void lib_init(void)
+void lib_init(int argc, char **argv, char **envp)
 {
-	parse_map();
+	parse_map(argc, argv, (const char *const *)envp);
 	in_library_initialize();
 	esan_enable_map_based_failure();
 }

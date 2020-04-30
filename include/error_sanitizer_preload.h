@@ -15,5 +15,5 @@
 
     Author: Ernest Borowski <e.borowski@samsung.com>
 */
-void __attribute__((constructor)) lib_init(void);
+void __attribute__((constructor)) lib_init(int argc, char **argv, char **envp);
 void __attribute__((destructor)) lib_exit(void);

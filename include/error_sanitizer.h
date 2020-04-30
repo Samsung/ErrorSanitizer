@@ -34,7 +34,7 @@ extern size_t esan_error_bitmap_size;
 
 uint8_t *esan_split_input_file(uint8_t *data, size_t size);
 void esan_initialize(uint8_t *bitmap_ptr, size_t bitmap_size);
-void parse_map(void);
+void parse_map(int argc, char **argv, const char *const *envp);
 void parse_map_cleanup(void);
 
 #ifdef DEBUG
