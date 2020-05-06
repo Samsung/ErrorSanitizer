@@ -83,6 +83,7 @@ void lib_init(int argc, char **argv, char **envp)
 
 void lib_exit(void)
 {
+	esan_disable_failure();
 #ifndef AFL
 	esan_print_stats();
 #endif
