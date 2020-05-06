@@ -1,0 +1,164 @@
+# Copyright (c) 2018 - 2020, Samsung Electronics Co., Ltd. All rights reserved.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 2 of the License.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+#
+# Author: Ernest Borowski <e.borowski@samsung.com>
+#
+version: 2
+jobs:
+  build:
+    docker:
+      - image: docker
+    steps:
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - checkout
+      - run: |
+          apk add --no-cache git &&
+          git submodule init &&
+          git submodule update --recursive --remote &&
+          docker build --pull --build-arg http_proxy="${http_proxy}" \
+            --build-arg https_proxy="${https_proxy}" --file ./ci/Dockerfile \
+            --tag "ci-${CIRCLE_SHA1}"  . &&
+          mkdir -p tmp &&
+          docker save -o "tmp/ci-${CIRCLE_SHA1}" "ci-${CIRCLE_SHA1}"
+      - persist_to_workspace:
+          root: tmp
+          paths:
+            - "ci*"
+  build-release-img:
+    docker:
+      - image: docker
+    steps:
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - checkout
+      - run: |
+          apk add --no-cache git &&
+          git submodule init &&
+          git submodule update --recursive --remote &&
+          docker build --pull --build-arg http_proxy="${http_proxy}" \
+             --build-arg https_proxy="${https_proxy}" --file ./Dockerfile --tag "${CIRCLE_SHA1}" .
+  check-license:
+    docker:
+      - image: docker
+    steps:
+      - setup_remote_docker:
+          docker_layer_caching: false
+      - attach_workspace:
+          at: tmp
+      - run: docker load -i "tmp/ci-${CIRCLE_SHA1}"
+      - run: docker run "ci-${CIRCLE_SHA1}" python3 /errorsanitizer/ci/check_license.py
+  check-trailing-whitespace:
+    docker:
+      - image: docker
+    steps:
+      - setup_remote_docker:
+          docker_layer_caching: false
+      - attach_workspace:
+          at: tmp
+      - run: docker load -i "tmp/ci-${CIRCLE_SHA1}"
+      - run: docker run "ci-${CIRCLE_SHA1}" bash /errorsanitizer/ci/run-find-trailing-whitespace.sh
+  build-scan:
+    docker:
+      - image: docker
+    steps:
+      - setup_remote_docker:
+          docker_layer_caching: false
+      - attach_workspace:
+          at: tmp
+      - run: docker load -i "tmp/ci-${CIRCLE_SHA1}"
+      - run: docker run "ci-${CIRCLE_SHA1}" bash /errorsanitizer/ci/run-build-scan.sh
+  clang-tidy:
+    docker:
+      - image: docker
+    steps:
+      - setup_remote_docker:
+          docker_layer_caching: false
+      - attach_workspace:
+          at: tmp
+      - run: docker load -i "tmp/ci-${CIRCLE_SHA1}"
+      - run: docker run "ci-${CIRCLE_SHA1}" bash /errorsanitizer/ci/run-clang-tidy.sh
+  clang-format:
+    docker:
+      - image: docker
+    steps:
+      - setup_remote_docker:
+          docker_layer_caching: false
+      - attach_workspace:
+          at: tmp
+      - run: docker load -i "tmp/ci-${CIRCLE_SHA1}"
+      - run: docker run "ci-${CIRCLE_SHA1}" bash /errorsanitizer/ci/run-clang-format.sh
+  test:
+    docker:
+      - image: docker
+    steps:
+      - setup_remote_docker:
+          docker_layer_caching: false
+      - attach_workspace:
+          at: tmp
+      - run: docker load -i "tmp/ci-${CIRCLE_SHA1}"
+      - run: docker run "ci-${CIRCLE_SHA1}" bash /errorsanitizer/ci/run-tests.sh
+  test-on-debug:
+    docker:
+      - image: docker
+    steps:
+      - setup_remote_docker:
+          docker_layer_caching: false
+      - attach_workspace:
+          at: tmp
+      - run: docker load -i "tmp/ci-${CIRCLE_SHA1}"
+      - run: docker run "ci-${CIRCLE_SHA1}" bash /errorsanitizer/ci/run-tests-on-debug.sh
+
+workflows:
+  version: 2
+  build-and-test:
+    jobs:
+      - build
+      - build-scan:
+          requires:
+            - build
+      - check-license:
+          requires:
+            - build
+      - check-trailing-whitespace:
+          requires:
+            - build
+      - clang-format:
+          requires:
+            - build
+      - clang-tidy:
+          requires:
+            - build
+
+      - test:
+          requires:
+            - build-scan
+            - check-license
+            - check-trailing-whitespace
+            - clang-format
+            - clang-tidy
+      - test-on-debug:
+          requires:
+            - build-scan
+            - check-license
+            - check-trailing-whitespace
+            - clang-format
+            - clang-tidy
+
+      - build-release-img:
+          requires:
+            - test
+            - test-on-debug
+
