@@ -48,6 +48,8 @@ LDFLAGS_LIB = $(LDFLAGS_LIB_LOCAL) -shared -ldl
 
 HOOK_OBJ = ${HOOK_PATH}/hooks.o
 LIB_OBJ = ${LIB_PATH}/in_library_api.o
+CFLAGS_COVERAGE = -fprofile-arcs -ftest-coverage -ggdb
+LDFLAGS_COVERAGE = -lgcov --coverage
 
 PRELOAD_SRC     = error_sanitizer_preload.c sanitizer_fail.c esan_fail.c
 
@@ -73,6 +75,14 @@ ev: hook $(LIBS)
 $(ESAN_INIT_OBJ): error_sanitizer.c $(LIB_OBJ)
 	$(CC) -nostdinc --sysroot=$(SYSROOT) -I$(SYSROOT)/include -c ${CFLAGS} $<
 
+coverage:
+	CFLAGS_LOCAL="$(CFLAGS_COVERAGE)" CFLAGS_LIB_LOCAL="$(CFLAGS_COVERAGE)" \
+		LDFLAGS_LOCAL="$(LDFLAGS_COVERAGE)" LDFLAGS_LIB_LOCAL="$(LDFLAGS_COVERAGE)" \
+		$(MAKE) rebuild
+	$(MAKE) run
+	gcovr -r "${ESAN_PATH}" --delete --print-summary --html --html-details -o coverage.html
+	find -type f -regex '.*\(gcno\|gcda\)$$' -delete
+
 $(ESAN_INIT_OBJ_LINKED): $(ESAN_INIT_OBJ)
 	$(LD) -nostdlib --sysroot=$(SYSROOT) -L$(SYSROOT)/lib -r -o $@ $< -lc
 
@@ -93,6 +103,7 @@ error_sanitizer_preload.so: $(ESAN_INIT_OBJ_API) $(HOOK_OBJ) $(LIB_OBJ)
 clean: hook_clean test_clean lib_clean
 	rm -f $(LIBS) $(HOOK_OBJ) $(ESAN_INIT_OBJ) $(ESAN_INIT_OBJ_LINKED) $(ESAN_INIT_OBJ_HIDDEN) \
 		$(ESAN_INIT_OBJ_API)
+	find -type f -regex '.*\(gcno\|gcda\|html\)$$' -delete
 
 hook: ${HOOK_PATH}/hooks.o
 
