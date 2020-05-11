@@ -20,6 +20,9 @@
 #ifndef ESAN_INTERNALS_H_
 #define ESAN_INTERNALS_H_
 
+#include "esan_fail.h"
+#include "in_library.h"
+
 enum ESAN_FUNCTIONS {
 	ESAN_CALLOC,
 	ESAN_MALLOC,
@@ -51,7 +54,25 @@ typedef struct stats {
 
 extern struct stats obj_stats[ESAN_NR_FUNCTIONS];
 
-int esan_should_I_fail(void);
+unsigned int get_failure_status_from_map(void);
+
+#define esan_should_I_fail()                                                  \
+	({                                                                    \
+		const void *tmp = __builtin_return_address(0);                \
+		enum ESAN_FAILURE_STATUS_E failure_status =                   \
+			esan_get_failure_status();                            \
+		int ret_code;                                                 \
+		if (failure_status == ESAN_ALWAYS_SUCCEED || in_library(tmp)) \
+			ret_code = 0;                                         \
+		else if (failure_status == ESAN_ALWAYS_FAIL)                  \
+			ret_code = 1;                                         \
+		/* failure_status == ESAN_MAP_BASED_FAILURE */                \
+		/* Get failure status from map */                             \
+		else                                                          \
+			ret_code = !!(get_failure_status_from_map());         \
+		(ret_code);                                                   \
+	})
+
 void esan_fail_message(const char *function_name);
 
 #endif /* ESAN_INTERNALS_H_ */

@@ -16,4 +16,5 @@
     Author: Ernest Borowski <e.borowski@samsung.com>
 */
 void in_library_initialize(void);
+void in_library_destructor(void);
 int in_library(const void *address);

@@ -65,7 +65,8 @@ $(LINKED_NAME_HIDDEN): $(LINKED_NAME)
 
 $(LINKED_NAME_API): $(LINKED_NAME_HIDDEN)
 	$(OBJCOPY) --globalize-symbol=in_library \
-		--globalize-symbol=in_library_initialize $< $@
+		--globalize-symbol=in_library_initialize \
+		--globalize-symbol=in_library_destructor $< $@
 
 ###
 

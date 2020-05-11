@@ -88,4 +88,5 @@ void lib_exit(void)
 	esan_print_stats();
 #endif
 	parse_map_cleanup();
+	in_library_destructor();
 }
