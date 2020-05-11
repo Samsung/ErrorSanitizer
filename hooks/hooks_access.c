@@ -39,7 +39,6 @@ int access(const char *pathname, int mode)
 	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
 	obj_stats[ESAN_ACCESS].esan_nr_executions += 1;
 	if (esan_should_I_fail()) {
-		fail_common();
 		esan_fail_message("access");
 		obj_stats[ESAN_ACCESS].esan_nr_failed_executions += 1;
 		return -1;
@@ -73,7 +72,6 @@ int faccessat(int dirfd, const char *pathname, int mode, int flags)
 	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
 	obj_stats[ESAN_FACCESSAT].esan_nr_executions += 1;
 	if (esan_should_I_fail()) {
-		fail_common();
 		esan_fail_message("faccessat");
 		obj_stats[ESAN_FACCESSAT].esan_nr_failed_executions += 1;
 		return -1;

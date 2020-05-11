@@ -42,7 +42,6 @@ FILE *fopen(const char *filename, const char *mode)
 	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
 	obj_stats[ESAN_FOPEN].esan_nr_executions += 1;
 	if (esan_should_I_fail()) {
-		fail_common();
 		esan_fail_message("fopen");
 		obj_stats[ESAN_FOPEN].esan_nr_failed_executions += 1;
 		return NULL;
@@ -74,7 +73,6 @@ off_t ftello(FILE *stream)
 	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
 	obj_stats[ESAN_FTELLO].esan_nr_executions += 1;
 	if (esan_should_I_fail()) {
-		fail_common();
 		esan_fail_message("ftello");
 		obj_stats[ESAN_FTELLO].esan_nr_failed_executions += 1;
 		return -1;
@@ -106,7 +104,6 @@ long ftell(FILE *stream)
 	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
 	obj_stats[ESAN_FTELL].esan_nr_executions += 1;
 	if (esan_should_I_fail()) {
-		fail_common();
 		esan_fail_message("ftell");
 		obj_stats[ESAN_FTELL].esan_nr_failed_executions += 1;
 		return -1;
@@ -146,7 +143,6 @@ int fclose(FILE *stream)
 	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
 	obj_stats[ESAN_FCLOSE].esan_nr_executions += 1;
 	if (esan_should_I_fail()) {
-		fail_common();
 		esan_fail_message("fclose");
 		obj_stats[ESAN_FCLOSE].esan_nr_failed_executions += 1;
 		return EOF;
@@ -179,7 +175,6 @@ void rewind(FILE *stream)
 	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
 	obj_stats[ESAN_REWIND].esan_nr_executions += 1;
 	if (esan_should_I_fail()) {
-		fail_common();
 		esan_fail_message("rewind");
 		obj_stats[ESAN_REWIND].esan_nr_failed_executions += 1;
 		ESAN_ERROR(
@@ -217,7 +212,6 @@ int fputs(const char *str, FILE *stream)
 	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
 	obj_stats[ESAN_FPUTS].esan_nr_executions += 1;
 	if (esan_should_I_fail()) {
-		fail_common();
 		esan_fail_message("fputs");
 		obj_stats[ESAN_FPUTS].esan_nr_failed_executions += 1;
 		return EOF;

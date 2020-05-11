@@ -42,7 +42,6 @@ char *strdup(const char *s)
 	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
 	obj_stats[ESAN_STRDUP].esan_nr_executions += 1;
 	if (esan_should_I_fail()) {
-		fail_common();
 		esan_fail_message("strdup");
 		obj_stats[ESAN_STRDUP].esan_nr_failed_executions += 1;
 		return NULL;
@@ -76,7 +75,6 @@ char *strndup(const char *s, size_t n)
 	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
 	obj_stats[ESAN_STRNDUP].esan_nr_executions += 1;
 	if (esan_should_I_fail()) {
-		fail_common();
 		esan_fail_message("strndup");
 		obj_stats[ESAN_STRNDUP].esan_nr_failed_executions += 1;
 		return NULL;

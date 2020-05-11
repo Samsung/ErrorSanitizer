@@ -55,7 +55,6 @@ int fcntl(int fd, int cmd, ...)
 	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
 	obj_stats[ESAN_FCNTL].esan_nr_executions += 1;
 	if (esan_should_I_fail()) {
-		fail_common();
 		esan_fail_message("fcntl");
 		obj_stats[ESAN_FCNTL].esan_nr_failed_executions += 1;
 		/* TODO implement below action performed on failure of hooked function */

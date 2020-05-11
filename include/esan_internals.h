@@ -53,6 +53,5 @@ extern struct stats obj_stats[ESAN_NR_FUNCTIONS];
 
 int esan_should_I_fail(void);
 void esan_fail_message(const char *function_name);
-void fail_common(void);
 
 #endif /* ESAN_INTERNALS_H_ */

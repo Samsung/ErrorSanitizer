@@ -45,7 +45,6 @@ void *calloc(size_t num, size_t size)
 	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
 	obj_stats[ESAN_CALLOC].esan_nr_executions += 1;
 	if (esan_should_I_fail()) {
-		fail_common();
 		esan_fail_message("calloc");
 		obj_stats[ESAN_CALLOC].esan_nr_failed_executions += 1;
 		return NULL;
@@ -76,7 +75,6 @@ void *malloc(size_t size)
 {
 	obj_stats[ESAN_MALLOC].esan_nr_executions += 1;
 	if (esan_should_I_fail()) {
-		fail_common();
 		esan_fail_message("malloc");
 		obj_stats[ESAN_MALLOC].esan_nr_failed_executions += 1;
 		return NULL;
@@ -110,7 +108,6 @@ void *realloc(void *ptr, size_t new_size)
 	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
 	obj_stats[ESAN_REALLOC].esan_nr_executions += 1;
 	if (esan_should_I_fail()) {
-		fail_common();
 		esan_fail_message("realloc");
 		obj_stats[ESAN_REALLOC].esan_nr_failed_executions += 1;
 		return NULL;

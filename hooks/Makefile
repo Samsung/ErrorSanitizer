@@ -24,14 +24,11 @@ CC ?= clang
 
 CFLAGS = ${CFLAGS_LOCAL} -Wno-unused-parameter
 
-SRC     = $(wildcard hooks_*.c) fail_common.c
+SRC     = $(wildcard hooks_*.c)
 OBJ		= $(SRC:.c=.o)
 ############################################################################
 
 all: $(OBJ) hooks.o
-
-fail_common.o: fail_common.c
-	$(CC) -c -o $@ $< $(CFLAGS)
 
 hooks_%.o: hooks_%.c
 	$(CC) -c -o $@ $< $(CFLAGS)

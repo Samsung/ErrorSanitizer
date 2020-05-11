@@ -51,7 +51,6 @@ EVP_CIPHER_CTX *EVP_CIPHER_CTX_new(void)
 	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
 	obj_stats[ESAN_EVP_CIPHER_CTX_NEW].esan_nr_executions += 1;
 	if (esan_should_I_fail()) {
-		fail_common();
 		esan_fail_message("EVP_CIPHER_CTX_new");
 		obj_stats[ESAN_EVP_CIPHER_CTX_NEW].esan_nr_failed_executions +=
 			1;
@@ -90,7 +89,6 @@ EVP_MD_CTX *EVP_MD_CTX_create(void)
 	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
 	obj_stats[ESAN_EVP_MD_CTX_CREATE].esan_nr_executions += 1;
 	if (esan_should_I_fail()) {
-		fail_common();
 		esan_fail_message("EVP_MD_CTX_create");
 		obj_stats[ESAN_EVP_MD_CTX_CREATE].esan_nr_failed_executions +=
 			1;
