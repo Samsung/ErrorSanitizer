@@ -75,10 +75,18 @@ ev: hook $(LIBS)
 $(ESAN_INIT_OBJ): error_sanitizer.c $(LIB_OBJ)
 	$(CC) -nostdinc --sysroot=$(SYSROOT) -I$(SYSROOT)/include -c ${CFLAGS} $<
 
-coverage:
-	CFLAGS_LOCAL="$(CFLAGS_COVERAGE)" CFLAGS_LIB_LOCAL="$(CFLAGS_COVERAGE)" \
+coverage_compile:
+	CC="gcc" CFLAGS_LOCAL="$(CFLAGS_COVERAGE)" CFLAGS_LIB_LOCAL="$(CFLAGS_COVERAGE)" \
 		LDFLAGS_LOCAL="$(LDFLAGS_COVERAGE)" LDFLAGS_LIB_LOCAL="$(LDFLAGS_COVERAGE)" \
 		$(MAKE) rebuild
+
+coverage:
+	$(MAKE) coverage_compile
+	$(MAKE) run
+	gcovr -r "${ESAN_PATH}" --delete --print-summary
+	find -type f -regex '.*\(gcno\|gcda\)$$' -delete
+coverage_html:
+	$(MAKE) coverage_compile
 	$(MAKE) run
 	gcovr -r "${ESAN_PATH}" --delete --print-summary --html --html-details -o coverage.html
 	find -type f -regex '.*\(gcno\|gcda\)$$' -delete

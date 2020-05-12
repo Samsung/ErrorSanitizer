@@ -32,21 +32,4 @@ SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
 
 cd "$SCRIPT_DIR/../" #go to main repository folder
 
-make # compile musl, it is needed because we don`t want to execute analysis for musl
-make clean
-bear make
-
-if [ ! -f ci/run-clang-tidy.py ]; then
-	curl -Sl "https://raw.githubusercontent.com/llvm-mirror/clang-tools-extra/release_90/clang-tidy/tool/run-clang-tidy.py" > \
-		ci/run-clang-tidy.py
-fi
-
-python3 ci/run-clang-tidy.py -clang-tidy-binary /usr/bin/clang-tidy \
-	-clang-apply-replacements-binary /usr/bin/clang-apply-replacements -quiet \
-	-checks="-,abseil*,bugprone*,cert*,clang-analyzer*,cppcoreguidelines*,hicpp*,llvm*,misc*,modernize*,performance*,readability*,-hicpp-braces-around-statements,-readability-braces-around-statements,-readability-else-after-return,-readability-isolate-declaration" \
-	| tee output.txt
-
-if [ "$(grep -cE ".*[0-9]+:[0-9]+: (warning|error).*\[.*\]$" output.txt)" != "0" ]; then
-	echo "clang-tidy found errors or warnings" 1>&2
-	exit 1
-fi
+CFLAGS_LOCAL="-O0 -ggdb -DDEBUG" make coverage

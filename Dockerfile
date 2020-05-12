@@ -15,7 +15,7 @@
 #
 # Author: Ernest Borowski <e.borowski@samsung.com>
 #
-FROM ubuntu:18.04 as build
+FROM ubuntu:20.04 as build
 
 # Update apps on the base image
 ARG DEBIAN_FRONTEND="noninteractive"
@@ -45,7 +45,7 @@ WORKDIR /errorsanitizer
 ARG CFLAGS="-03"
 RUN make
 
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 WORKDIR /errorsanitizer
 COPY --from=build /errorsanitizer/error_sanitizer_preload.so /usr/lib/
 CMD ["sh"]

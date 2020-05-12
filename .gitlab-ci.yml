@@ -167,3 +167,11 @@ Test-on-debug:
     - echo "pull docker img && CFLAGS_LOCAL=\"-O0 -ggdb -DDEBUG\" make && make tests"
     - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
     - docker run $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA bash /errorsanitizer/ci/run-tests-on-debug.sh
+
+Coverage-on-debug:
+  stage: test
+  dependencies:
+    - Build
+  script:
+    - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - docker run $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA bash /errorsanitizer/ci/run-coverage-on-debug.sh

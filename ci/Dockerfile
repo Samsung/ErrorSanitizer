@@ -15,7 +15,7 @@
 #
 # Author: Ernest Borowski <e.borowski@samsung.com>
 #
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 # Update apps on the base image
 ENV DEBIAN_FRONTEND noninteractive
@@ -30,10 +30,11 @@ RUN apt-get -y update && \
 		>> /etc/apt/sources.list && \
 	apt-get -y update && \
 	apt-get -y install clang-9 make libssl-dev bear clang-format-9 clang-tidy-9 \
-		clang-tools-9 git python3 libfindbin-libs-perl bash && \
+		clang-tools-9 git python3 libfindbin-libs-perl bash gcovr && \
 	rm -rf /var/lib/apt/lists/*
 
-RUN ln -s /usr/bin/clang-9 /usr/bin/cc && \
+RUN rm /usr/bin/cc && \
+	ln -s /usr/bin/clang-9 /usr/bin/cc && \
 	ln -s /usr/bin/clang++-9 /usr/bin/cxx && \
 	ln -s /usr/bin/clang-tidy-9 /usr/bin/clang-tidy && \
 	ln -s /usr/bin/clang-format-9 /usr/bin/clang-format && \
