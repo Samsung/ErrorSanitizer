@@ -33,17 +33,13 @@ char *real_strdup(const char *s)
 	if (NULL != strdup_func_ptr)
 		return (*strdup_func_ptr)(s);
 
-	ESAN_ERROR("Error in dlsym - in 'strdup' wrapper\n");
+	log("Error in dlsym - in 'strdup' wrapper\n");
 	exit(-1);
 }
 
 char *strdup(const char *s)
 {
-	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
-	obj_stats[ESAN_STRDUP].esan_nr_executions += 1;
-	if (esan_should_I_fail()) {
-		esan_fail_message("strdup");
-		obj_stats[ESAN_STRDUP].esan_nr_failed_executions += 1;
+	if (esan_should_I_fail(__builtin_return_address(0), ESAN_STRDUP)) {
 		return NULL;
 	} else {
 		return real_strdup(s);
@@ -64,7 +60,7 @@ char *real_strndup(const char *s, size_t n)
 	if (NULL != strndup_func_ptr)
 		return (*strndup_func_ptr)(s, n);
 
-	ESAN_ERROR("Error in dlsym - in 'strndup' wrapper\n");
+	log("Error in dlsym - in 'strndup' wrapper\n");
 	exit(-1);
 }
 
@@ -72,11 +68,7 @@ char *real_strndup(const char *s, size_t n)
 // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name)
 char *strndup(const char *s, size_t n)
 {
-	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
-	obj_stats[ESAN_STRNDUP].esan_nr_executions += 1;
-	if (esan_should_I_fail()) {
-		esan_fail_message("strndup");
-		obj_stats[ESAN_STRNDUP].esan_nr_failed_executions += 1;
+	if (esan_should_I_fail(__builtin_return_address(0), ESAN_STRNDUP)) {
 		return NULL;
 	} else {
 		return real_strndup(s, n);

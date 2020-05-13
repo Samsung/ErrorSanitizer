@@ -22,7 +22,7 @@ endif
 
 CC ?= clang
 
-CFLAGS = ${CFLAGS_LOCAL} -Wno-unused-parameter
+CFLAGS = ${CFLAGS_LOCAL} -Wno-unused-parameter -D_GNU_SOURCE
 
 SRC     = $(wildcard hooks_*.c)
 OBJ		= $(SRC:.c=.o)

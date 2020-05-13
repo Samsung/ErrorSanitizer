@@ -52,19 +52,14 @@ int fcntl(int fd, int cmd, ...)
 	int ret, int_arg, temp_cmd;
 	void *ptr_arg;
 
-	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
-	obj_stats[ESAN_FCNTL].esan_nr_executions += 1;
-	if (esan_should_I_fail()) {
-		esan_fail_message("fcntl");
-		obj_stats[ESAN_FCNTL].esan_nr_failed_executions += 1;
-		/* TODO implement below action performed on failure of hooked function */
+	if (esan_should_I_fail(__builtin_return_address(0), ESAN_FCNTL)) {
 		return -1;
 	} else {
 		if (NULL == fcntl_func_ptr)
 			fcntl_func_ptr =
 				(fcntl_func_t)dlsym(RTLD_NEXT, "fcntl");
 		if (NULL == fcntl_func_ptr) {
-			ESAN_ERROR("Error in dlsym - in 'fcntl' wrapper\n");
+			log("Error in dlsym - in 'fcntl' wrapper\n");
 			exit(-1);
 		}
 
@@ -88,7 +83,7 @@ int fcntl(int fd, int cmd, ...)
 			return ret;
 		}
 
-		ESAN_ERROR("Error in 'fcntl' wrapper implementation!\n");
+		log("Error in 'fcntl' wrapper implementation!\n");
 		exit(-1);
 	}
 }

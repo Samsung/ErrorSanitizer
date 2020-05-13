@@ -20,8 +20,8 @@
 #ifndef HOOKS_INCLUDE_H_
 #define HOOKS_INCLUDE_H_
 
-#include "error_sanitizer.h"
-#include "esan_internals.h"
+#include "esan_fail.h"
+#include "log.h"
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE

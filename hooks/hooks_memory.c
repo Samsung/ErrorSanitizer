@@ -42,11 +42,7 @@ void *real_calloc(size_t num, size_t size)
 // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name)
 void *calloc(size_t num, size_t size)
 {
-	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
-	obj_stats[ESAN_CALLOC].esan_nr_executions += 1;
-	if (esan_should_I_fail()) {
-		esan_fail_message("calloc");
-		obj_stats[ESAN_CALLOC].esan_nr_failed_executions += 1;
+	if (esan_should_I_fail(__builtin_return_address(0), ESAN_CALLOC)) {
 		return NULL;
 	} else {
 		return real_calloc(num, size);
@@ -67,16 +63,13 @@ void *real_malloc(size_t size)
 	if (NULL != malloc_func_ptr)
 		return (*malloc_func_ptr)(size);
 
-	ESAN_ERROR("Error in dlsym - in 'malloc' wrapper\n");
+	log("Error in dlsym - in 'malloc' wrapper\n");
 	exit(-1);
 }
 
 void *malloc(size_t size)
 {
-	obj_stats[ESAN_MALLOC].esan_nr_executions += 1;
-	if (esan_should_I_fail()) {
-		esan_fail_message("malloc");
-		obj_stats[ESAN_MALLOC].esan_nr_failed_executions += 1;
+	if (esan_should_I_fail(__builtin_return_address(0), ESAN_MALLOC)) {
 		return NULL;
 	} else {
 		return real_malloc(size);
@@ -97,7 +90,7 @@ void *real_realloc(void *ptr, size_t new_size)
 	if (NULL != realloc_func_ptr)
 		return (*realloc_func_ptr)(ptr, new_size);
 
-	ESAN_ERROR("Error in dlsym - in 'realloc' wrapper\n");
+	log("Error in dlsym - in 'realloc' wrapper\n");
 	exit(-1);
 }
 
@@ -105,11 +98,7 @@ void *real_realloc(void *ptr, size_t new_size)
 // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name)
 void *realloc(void *ptr, size_t new_size)
 {
-	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
-	obj_stats[ESAN_REALLOC].esan_nr_executions += 1;
-	if (esan_should_I_fail()) {
-		esan_fail_message("realloc");
-		obj_stats[ESAN_REALLOC].esan_nr_failed_executions += 1;
+	if (esan_should_I_fail(__builtin_return_address(0), ESAN_REALLOC)) {
 		return NULL;
 	} else {
 		return real_realloc(ptr, new_size);

@@ -31,7 +31,7 @@ FILE *real_fopen(const char *filename, const char *mode)
 	if (NULL != fopen_func_ptr)
 		return (*fopen_func_ptr)(filename, mode);
 
-	ESAN_ERROR("Error in dlsym - in 'fopen' wrapper\n");
+	log("Error in dlsym - in 'fopen' wrapper\n");
 	exit(-1);
 }
 
@@ -39,11 +39,7 @@ FILE *real_fopen(const char *filename, const char *mode)
 // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name)
 FILE *fopen(const char *filename, const char *mode)
 {
-	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
-	obj_stats[ESAN_FOPEN].esan_nr_executions += 1;
-	if (esan_should_I_fail()) {
-		esan_fail_message("fopen");
-		obj_stats[ESAN_FOPEN].esan_nr_failed_executions += 1;
+	if (esan_should_I_fail(__builtin_return_address(0), ESAN_FOPEN)) {
 		return NULL;
 	} else {
 		return real_fopen(filename, mode);
@@ -64,17 +60,13 @@ off_t real_ftello(FILE *stream)
 	if (NULL != ftello_func_ptr)
 		return (*ftello_func_ptr)(stream);
 
-	ESAN_ERROR("Error in dlsym - in 'ftello' wrapper\n");
+	log("Error in dlsym - in 'ftello' wrapper\n");
 	exit(-1);
 }
 
 off_t ftello(FILE *stream)
 {
-	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
-	obj_stats[ESAN_FTELLO].esan_nr_executions += 1;
-	if (esan_should_I_fail()) {
-		esan_fail_message("ftello");
-		obj_stats[ESAN_FTELLO].esan_nr_failed_executions += 1;
+	if (esan_should_I_fail(__builtin_return_address(0), ESAN_FTELLO)) {
 		return -1;
 	} else {
 		return real_ftello(stream);
@@ -95,25 +87,20 @@ long real_ftell(FILE *stream)
 	if (NULL != ftell_func_ptr)
 		return (*ftell_func_ptr)(stream);
 
-	ESAN_ERROR("Error in dlsym - in 'ftell' wrapper\n");
+	log("Error in dlsym - in 'ftell' wrapper\n");
 	exit(-1);
 }
 
 long ftell(FILE *stream)
 {
-	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
-	obj_stats[ESAN_FTELL].esan_nr_executions += 1;
-	if (esan_should_I_fail()) {
-		esan_fail_message("ftell");
-		obj_stats[ESAN_FTELL].esan_nr_failed_executions += 1;
+	if (esan_should_I_fail(__builtin_return_address(0), ESAN_FTELL)) {
 		return -1;
 	} else {
 		off_t off_t_result = real_ftello(stream);
 		long long_result = real_ftell(stream);
 		if (off_t_result != (off_t)long_result) {
-			ESAN_ERROR(
-				"File size overflow when using ftell() - use ftello() "
-				"instead! (See: FIO19-C)");
+			log("File size overflow when using ftell() - use ftello() "
+			    "instead! (See: FIO19-C)");
 			exit(-1);
 		}
 		return long_result;
@@ -134,17 +121,13 @@ int real_fclose(FILE *stream)
 	if (NULL != fclose_func_ptr)
 		return (*fclose_func_ptr)(stream);
 
-	ESAN_ERROR("Error in dlsym - in 'fclose' wrapper\n");
+	log("Error in dlsym - in 'fclose' wrapper\n");
 	exit(-1);
 }
 
 int fclose(FILE *stream)
 {
-	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
-	obj_stats[ESAN_FCLOSE].esan_nr_executions += 1;
-	if (esan_should_I_fail()) {
-		esan_fail_message("fclose");
-		obj_stats[ESAN_FCLOSE].esan_nr_failed_executions += 1;
+	if (esan_should_I_fail(__builtin_return_address(0), ESAN_FCLOSE)) {
 		return EOF;
 	} else {
 		return real_fclose(stream);
@@ -165,22 +148,17 @@ void real_rewind(FILE *stream)
 	if (NULL != rewind_func_ptr)
 		(*rewind_func_ptr)(stream);
 	else {
-		ESAN_ERROR("Error in dlsym - in 'rewind' wrapper\n");
+		log("Error in dlsym - in 'rewind' wrapper\n");
 		exit(-1);
 	}
 }
 
 void rewind(FILE *stream)
 {
-	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
-	obj_stats[ESAN_REWIND].esan_nr_executions += 1;
-	if (esan_should_I_fail()) {
-		esan_fail_message("rewind");
-		obj_stats[ESAN_REWIND].esan_nr_failed_executions += 1;
-		ESAN_ERROR(
-			"%s is obsolete function - see SEI CERT C Coding Standard "
-			"MSC24-C for details!\n",
-			"rewind");
+	if (esan_should_I_fail(__builtin_return_address(0), ESAN_REWIND)) {
+		log("%s is obsolete function - see SEI CERT C Coding Standard "
+		    "MSC24-C for details!\n",
+		    "rewind");
 		exit(-3);
 	} else {
 		real_rewind(stream);
@@ -201,7 +179,7 @@ int real_fputs(const char *str, FILE *stream)
 	if (NULL != fputs_func_ptr)
 		return (*fputs_func_ptr)(str, stream);
 
-	ESAN_ERROR("Error in dlsym - in 'fputs' wrapper\n");
+	log("Error in dlsym - in 'fputs' wrapper\n");
 	exit(-1);
 }
 
@@ -209,11 +187,7 @@ int real_fputs(const char *str, FILE *stream)
 // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name)
 int fputs(const char *str, FILE *stream)
 {
-	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
-	obj_stats[ESAN_FPUTS].esan_nr_executions += 1;
-	if (esan_should_I_fail()) {
-		esan_fail_message("fputs");
-		obj_stats[ESAN_FPUTS].esan_nr_failed_executions += 1;
+	if (esan_should_I_fail(__builtin_return_address(0), ESAN_FPUTS)) {
 		return EOF;
 	} else {
 		return real_fputs(str, stream);

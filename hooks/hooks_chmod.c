@@ -30,17 +30,13 @@ int real_chmod(const char *path, mode_t mode)
 	if (NULL != chmod_func_ptr)
 		return (*chmod_func_ptr)(path, mode);
 
-	ESAN_ERROR("Error in dlsym - in 'chmod' wrapper\n");
+	log("Error in dlsym - in 'chmod' wrapper\n");
 	exit(-1);
 }
 
 int chmod(const char *path, mode_t mode)
 {
-	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
-	obj_stats[ESAN_CHMOD].esan_nr_executions += 1;
-	if (esan_should_I_fail()) {
-		esan_fail_message("chmod");
-		obj_stats[ESAN_CHMOD].esan_nr_failed_executions += 1;
+	if (esan_should_I_fail(__builtin_return_address(0), ESAN_CHMOD)) {
 		return -1;
 	} else {
 		return real_chmod(path, mode);
@@ -61,17 +57,13 @@ int real_fchmod(int fd, mode_t mode)
 	if (NULL != fchmod_func_ptr)
 		return (*fchmod_func_ptr)(fd, mode);
 
-	ESAN_ERROR("Error in dlsym - in 'fchmod' wrapper\n");
+	log("Error in dlsym - in 'fchmod' wrapper\n");
 	exit(-1);
 }
 
 int fchmod(int fd, mode_t mode)
 {
-	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
-	obj_stats[ESAN_FCHMOD].esan_nr_executions += 1;
-	if (esan_should_I_fail()) {
-		esan_fail_message("fchmod");
-		obj_stats[ESAN_FCHMOD].esan_nr_failed_executions += 1;
+	if (esan_should_I_fail(__builtin_return_address(0), ESAN_FCHMOD)) {
 		return -1;
 	} else {
 		return real_fchmod(fd, mode);

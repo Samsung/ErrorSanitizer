@@ -18,10 +18,12 @@
 #ifndef ESAN_FAIL_H
 #define ESAN_FAIL_H
 
+#include "stats.h"
+
 enum ESAN_FAILURE_STATUS_E {
-	ESAN_MAP_BASED_FAILURE,
 	ESAN_ALWAYS_SUCCEED,
-	ESAN_ALWAYS_FAIL
+	ESAN_ALWAYS_FAIL,
+	ESAN_MAP_BASED_FAILURE,
 };
 
 void esan_disable_failure(void);
@@ -30,5 +32,7 @@ void esan_enable_map_based_failure(void);
 enum ESAN_FAILURE_STATUS_E esan_get_and_disable_failure(void);
 enum ESAN_FAILURE_STATUS_E esan_get_failure_status(void);
 void esan_set_failure_status(enum ESAN_FAILURE_STATUS_E failure_status);
+enum ESAN_FAILURE_E esan_should_I_fail(const void *caller_addr,
+				       enum ESAN_FUNCTIONS_E hook);
 
 #endif /* ESAN_FAIL_H */

@@ -51,7 +51,7 @@ LIB_OBJ = ${LIB_PATH}/in_library_api.o
 CFLAGS_COVERAGE = -fprofile-arcs -ftest-coverage -ggdb
 LDFLAGS_COVERAGE = -lgcov --coverage
 
-PRELOAD_SRC     = error_sanitizer_preload.c sanitizer_fail.c esan_fail.c
+PRELOAD_SRC     = error_sanitizer_preload.c esan_stats.c esan_fail.c
 
 ESAN_INIT_OBJ := error_sanitizer.o
 ESAN_INIT_OBJ_LINKED := error_sanitizer_linked.o

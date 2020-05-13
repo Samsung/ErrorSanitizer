@@ -37,23 +37,4 @@ void esan_initialize(uint8_t *bitmap_ptr, size_t bitmap_size);
 void parse_map(int argc, char **argv, const char *const *envp);
 void parse_map_cleanup(void);
 
-#ifdef DEBUG
-#define ESAN_DEBUG(...)                                                     \
-	do {                                                                \
-		enum ESAN_FAILURE_STATUS_E old_esan_always_succeed =        \
-			esan_get_and_disable_failure();                     \
-		fprintf(stdout, "====: ErrorSanitizer: DBG: " __VA_ARGS__); \
-		esan_set_failure_status(old_esan_always_succeed);           \
-	} while (0)
-#else
-#define ESAN_DEBUG(...)
-#endif
-
-#define ESAN_ERROR(...)                                                \
-	do {                                                           \
-		enum ESAN_FAILURE_STATUS_E old_esan_always_succeed =   \
-			esan_get_and_disable_failure();                \
-		fprintf(stderr, "====: ErrorSanitizer: " __VA_ARGS__); \
-		esan_set_failure_status(old_esan_always_succeed);      \
-	} while (0)
 #endif /* _ERROR_SANITIZER_H */

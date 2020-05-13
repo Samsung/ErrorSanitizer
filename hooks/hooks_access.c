@@ -30,17 +30,13 @@ int real_access(const char *pathname, int mode)
 	if (NULL != access_func_ptr)
 		return (*access_func_ptr)(pathname, mode);
 
-	ESAN_ERROR("Error in dlsym - in 'access' wrapper\n");
+	log("Error in dlsym - in 'access' wrapper\n");
 	exit(-1);
 }
 
 int access(const char *pathname, int mode)
 {
-	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
-	obj_stats[ESAN_ACCESS].esan_nr_executions += 1;
-	if (esan_should_I_fail()) {
-		esan_fail_message("access");
-		obj_stats[ESAN_ACCESS].esan_nr_failed_executions += 1;
+	if (esan_should_I_fail(__builtin_return_address(0), ESAN_ACCESS)) {
 		return -1;
 	} else {
 		return real_access(pathname, mode);
@@ -63,17 +59,13 @@ int real_faccessat(int dirfd, const char *pathname, int mode, int flags)
 	if (NULL != faccessat_func_ptr)
 		return (*faccessat_func_ptr)(dirfd, pathname, mode, flags);
 
-	ESAN_ERROR("Error in dlsym - in 'faccessat' wrapper\n");
+	log("Error in dlsym - in 'faccessat' wrapper\n");
 	exit(-1);
 }
 
 int faccessat(int dirfd, const char *pathname, int mode, int flags)
 {
-	ESAN_DEBUG("%s %s:%d\n", __FILE__, __FUNCTION__, __LINE__);
-	obj_stats[ESAN_FACCESSAT].esan_nr_executions += 1;
-	if (esan_should_I_fail()) {
-		esan_fail_message("faccessat");
-		obj_stats[ESAN_FACCESSAT].esan_nr_failed_executions += 1;
+	if (esan_should_I_fail(__builtin_return_address(0), ESAN_FACCESSAT)) {
 		return -1;
 	} else {
 		return real_faccessat(dirfd, pathname, mode, flags);

@@ -16,6 +16,9 @@
     Author: Ernest Borowski <e.borowski@samsung.com>
 */
 #include "esan_fail.h"
+#include "error_sanitizer.h"
+#include "in_library.h"
+#include "stats.h"
 
 static enum ESAN_FAILURE_STATUS_E esan_always_succeed = ESAN_ALWAYS_SUCCEED;
 void esan_disable_failure(void)
@@ -43,4 +46,39 @@ enum ESAN_FAILURE_STATUS_E esan_get_and_disable_failure(void)
 void esan_set_failure_status(enum ESAN_FAILURE_STATUS_E failure_status)
 {
 	esan_always_succeed = failure_status;
+}
+
+static unsigned long esan_total_execs = 0;
+#define BITS_PER_BYTE 8
+static enum ESAN_FAILURE_E get_failure_status_from_map(void)
+{
+	unsigned int index_byte = esan_total_execs / BITS_PER_BYTE;
+	unsigned int index_bit = esan_total_execs % BITS_PER_BYTE;
+	++esan_total_execs;
+
+	/* fail if map is to short, not to let afl cut the input */
+	if (index_byte >= esan_error_bitmap_size)
+		return 1;
+
+	return ((1U << index_bit) &
+		(unsigned char)esan_error_bitmap[index_byte]);
+}
+
+enum ESAN_FAILURE_E esan_should_I_fail(const void *caller_addr,
+				       enum ESAN_FUNCTIONS_E hook)
+{
+	enum ESAN_FAILURE_STATUS_E failure_status = esan_get_failure_status();
+	enum ESAN_FAILURE_E ret_code;
+	if (failure_status == ESAN_ALWAYS_SUCCEED || in_library(caller_addr))
+		ret_code = ESAN_SUCCEED;
+	else if (failure_status == ESAN_ALWAYS_FAIL)
+		ret_code = ESAN_FAIL;
+	/* failure_status == ESAN_MAP_BASED_FAILURE */
+	/* Get failure status from map */
+	else
+		ret_code = !!(get_failure_status_from_map());
+#ifndef AFL
+	add_execution(hook, ret_code);
+#endif
+	return ret_code;
 }
