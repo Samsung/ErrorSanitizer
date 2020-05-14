@@ -16,16 +16,19 @@
 #
 # Author: Ernest Borowski <e.borowski@samsung.com>
 #
-import subprocess
-import os.path
 import argparse
+import difflib
+import os.path
 import re
+import subprocess
+import sys
 
-def return_suname_if_present(name_and_surname):
+def return_surname_if_present(name_and_surname):
     m = name_and_surname.split()
     if len(m) > 1:
         return m[1]
     return m[0]
+
 def generate_license(authors, commit_year, first_commit_year, license_type):
     license = []
     if license_type == 'hash':
@@ -50,8 +53,8 @@ def generate_license(authors, commit_year, first_commit_year, license_type):
     else:
         license.append('\n')
 
-    authors = sorted(sorted(authors), key=return_suname_if_present)
-    for author in authors:
+    sorted_authors = sorted(sorted(authors), key=return_surname_if_present)
+    for author in sorted_authors:
         license.append(prefix + author + '\n')
 
     if license_type == 'hash':
@@ -61,7 +64,23 @@ def generate_license(authors, commit_year, first_commit_year, license_type):
 
     return license
 
-def process_files(repair_files, check_all_files):
+def print_diff(diff, colorize_output):
+    if not colorize_output:
+        sys.stdout.writelines(diff)
+        return
+
+    for line in diff:
+        if line.startswith('+ '):
+            sys.stdout.writelines("\u001b[32m" + line + "\u001b[0m")
+        elif line.startswith('- '):
+            sys.stdout.writelines("\u001b[31m" + line + "\u001b[0m")
+        elif line.startswith('? '):
+            sys.stdout.writelines("\u001b[34m" + line + "\u001b[0m")
+        else:
+            sys.stdout.writelines(line)
+
+
+def process_files(repair_files, check_all_files, display_diff, colorize_output):
     if check_all_files:
         process = subprocess.run(['git', 'ls-files', '-z'], stdout=subprocess.PIPE,
                                 universal_newlines=True)
@@ -72,6 +91,7 @@ def process_files(repair_files, check_all_files):
     wrong_license_files = []
     wrong_extensions = ['.map', '.txt', '.gitignore', '.clang-format', '.clang-format-ignore',
                        '.gitmodules', '.md']
+    tmp_files = set()
     for file in process.stdout.split('\0'):
         authors = set()
         wrong_ext = False
@@ -80,22 +100,20 @@ def process_files(repair_files, check_all_files):
                 wrong_ext = True
         if (not os.path.isfile(file)) or wrong_ext:
             continue
-        # find all file authors
-        #process = subprocess.run(['git', 'log', '--pretty=format:%an <%ae>', file], stdout=subprocess.PIPE,
-        #                        universal_newlines=True)
-        process = subprocess.run(['git', 'blame', '--line-porcelain', file], stdout=subprocess.PIPE,
-                                 universal_newlines=True)
-        proc_lines = process.stdout.split('\n')
-        it = 0
-        proc_lines_len = len(proc_lines)
-        while (it < proc_lines_len):
-            if proc_lines[it].startswith('author '):
-                author = proc_lines[it].lstrip('author ')
-                author_mail = proc_lines[it + 1].lstrip('author-mail ')
-                if author_mail != '<not.committed.yet>':
-                    authors.add(author + ' ' + author_mail)
-                it += 1
-            it += 1
+        process = subprocess.run(['git', 'log', '--format=%H Author: %aN <%aE>', '--follow', '--', file],
+                                 stdout=subprocess.PIPE, universal_newlines=True)
+        author_lines = process.stdout.split('\n')
+        for author_line in author_lines:
+            commit_hash = author_line.split(' ')[0]
+            author_line = author_line.lstrip(commit_hash + ' ')
+            if author_line.startswith('Author: '):
+                author = author_line.lstrip('Author: ')
+                process = subprocess.run(['git', 'diff-tree', '--no-commit-id', '--name-only',
+                                          '-r', '--exit-code', commit_hash, '--', file],
+                                         stdout=subprocess.PIPE, universal_newlines=True)
+                # git returns non zero exit code if file was changed in this commit
+                if process.returncode != 0 and not '<not.committed.yet>' in author:
+                    authors.add(author)
         # find commit date
         process = subprocess.run(['git', 'show', '-s', '--format=%ai', 'HEAD'], stdout=subprocess.PIPE,
                                 universal_newlines=True)
@@ -123,29 +141,21 @@ def process_files(repair_files, check_all_files):
             file_len = len(lines)
             if license_len > file_len:
                 print("license length missmatch, want >= {}, got {}".format(license_len, file_len))
-            FIRST_LINE_REG='^[#| ]*Copyright \\(c\\) [0-9]{4}.*All rights reserved.'
-            comp = re.compile(FIRST_LINE_REG)
-            file_without_license = False
+            COPYRIGHT_LINE_REG=r'^[#| ]*Copyright \\(c\\) [0-9]{4}.*All rights reserved\.'
+            comp = re.compile(COPYRIGHT_LINE_REG)
+            copyright_pos = 0
             if license_type == 'c_style':
-                if not comp.match(lines[1]):
-                    file_without_license = True
-            elif not comp.match(lines[0]):
-                file_without_license = True
+                copyright_pos += 1
 
-            if file_without_license:
+            if comp.match(lines[copyright_pos]):
                 print("file without license: {}".format(file))
                 wrong_license_files.append(file)
             else:
-                got_error = False
                 for it in range(0, license_len):
                     if lines[it] != license[it]:
-                        print("got err at {} in {}:".format(it + 1, file))
-                        print("correct: {}".format(license[it]))
-                        print("    got: {}".format(lines[it]))
-                        got_error = True
-                if got_error:
-                    wrong_license_files.append(file)
-            if repair_files and file in wrong_license_files:
+                        wrong_license_files.append(file)
+                        break
+            if file in wrong_license_files:
                 end_point = 0
                 if license_type == 'c_style':
                     if lines[0].startswith('/*'):
@@ -158,32 +168,58 @@ def process_files(repair_files, check_all_files):
                         if not (lines[it].isspace() or lines[it].startswith('#')):
                             end_point = it
                             break
-                with open(file, 'w') as fw:
+                tmp_output = file + '.tmp'
+                with open(tmp_output, 'w') as fw:
                     if shebang != '':
                         fw.write(shebang)
                     for line in license:
                         fw.write(line)
                     for it in range(end_point, len(lines)):
                         fw.write(lines[it])
+                    tmp_files.add(tmp_output)
+                    diff = list(difflib.context_diff(lines[:end_point], license,
+                                                fromfile=file, tofile=tmp_output))
+                    # do not count files with more authors as file with wrong license
+                    # it may have more authors because file could be e.g. renamed, merged etc
+                    only_more_authors = True
+                    CHANGED_LINE_RE=r'^[-+?] .*'
+                    AUTHOR_LINE_RE=r'- #?\s+Author: '
+                    comp_changed = re.compile(CHANGED_LINE_RE)
+                    comp_author = re.compile(AUTHOR_LINE_RE)
+                    for line in diff:
+                        if comp_changed.match(line) and (not comp_author.match(line)):
+                            only_more_authors = False
+                            break
+                    if only_more_authors:
+                        wrong_license_files.remove(file)
+                    else:
+                        if display_diff:
+                            print_diff(diff, colorize_output)
+                        if repair_files:
+                            os.rename(tmp_output, file)
 
     got_error = False
     for wlf in wrong_license_files:
         print("File with wrong license: {}".format(wlf))
         got_error = True
+    for tf in tmp_files:
+        os.remove(tf)
     if got_error:
         exit(1)
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--inplace", help="Replace wrong files in place.", action='store_true')
+    parser.add_argument("-d", "--diff", help="Display diff", action='store_true')
     parser.add_argument("-a", "--all",
                        help="Check all files known to git instead of only those present in last commit",
                        action='store_true')
+    parser.add_argument("-c", "--color", help="Colorize output", action='store_true')
     args = parser.parse_args()
     script_dir = os.path.realpath(__file__)
     script_dir = os.path.dirname(script_dir)
     os.chdir(script_dir + '/../')
 
-    process_files(args.inplace, args.all)
+    process_files(args.inplace, args.all, args.diff, args.color)
 
 parse_args()
