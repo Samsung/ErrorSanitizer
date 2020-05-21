@@ -69,7 +69,8 @@ enum ESAN_FAILURE_E esan_should_I_fail(const void *caller_addr,
 {
 	enum ESAN_FAILURE_STATUS_E failure_status = esan_get_failure_status();
 	enum ESAN_FAILURE_E ret_code;
-	if (failure_status == ESAN_ALWAYS_SUCCEED || in_library(caller_addr))
+	int in_lib = in_library(caller_addr);
+	if (failure_status == ESAN_ALWAYS_SUCCEED || in_lib)
 		ret_code = ESAN_SUCCEED;
 	else if (failure_status == ESAN_ALWAYS_FAIL)
 		ret_code = ESAN_FAIL;
@@ -78,7 +79,10 @@ enum ESAN_FAILURE_E esan_should_I_fail(const void *caller_addr,
 	else
 		ret_code = !!(get_failure_status_from_map());
 #ifndef AFL
-	add_execution(hook, ret_code);
+	if (!in_lib)
+		add_execution(hook, ret_code);
+#else
+	(void)hook;
 #endif
 	return ret_code;
 }
