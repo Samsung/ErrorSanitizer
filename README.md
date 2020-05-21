@@ -23,7 +23,7 @@ Normally we would just type:
    ```shell
    cat "/etc/passwd"
    ```
-Now let\`s do the same using ErrorSanitizer.
+Now let's do the same using ErrorSanitizer.
 
 1. Clone project
    ```shell
@@ -54,13 +54,13 @@ Now let\`s do the same using ErrorSanitizer.
       cp tests/esan_always_succeed.map succeed.cur_input
     ```
     File succeed.cur_input should have only _FAILURE_MAP_ and XXXX field separator
-	as we don`t want to pass any additional data to cat application.
-    In this example we don`t have to worry about it beacause it is already true.
+	as we don't want to pass any additional data to cat application.
+    In this example we don't have to worry about it beacause it is already true.
     Now just execute:
     ```shell
       LD_PRELOAD="$(pwd)/error_sanitizer_preload.so" cat /etc/passwd succeed.cur_input
     ```
-    Before execution reaches cat\`s main() function Errorsanitizer will create new file `succeed.esn_input`
+    Before execution reaches cat's main() function Errorsanitizer will create new file `succeed.esn_input`
     and change the second application argument to `succeed.esn_input`.
     It will be empty since `succeed.cur_input` had only `_FAILURE_MAP_` and `XXXX` field separator in it.
     Therefore the result will be the same as just executing `cat /etc/passwd`
@@ -88,7 +88,7 @@ where:
 
 `_OPTIONAL_SAMPLE_BINARY_DATA_` - data for tested application. For example filepath for cat binary "/etc/passwd"
 
-ErrorSanitizer in it\`s constructor reads this data from the input file / STDIN
+ErrorSanitizer in it's constructor reads this data from the input file / STDIN
 and passes only `_OPTIONAL_SAMPLE_BINARY_DATA_` to the application.
 When the map is provided as file, ErrorSanitizer creates a new file with only `_OPTIONAL_SAMPLE_BINARY_DATA_`.
 The newly created file resides in the same path but the file extension is changed from ".cur_input" to ".esn_input".
