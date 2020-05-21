@@ -1,12 +1,14 @@
 # ErrorSanitizer
-This project injects failures to some standard library function calls.
-For example it can make malloc() return NULL or ftello return -1 as return value.
-The failures injections are based on user / fuzzer generated map file.
+ErrorSanitizer (ESAN in short) is a library that can be used to detect incorrect handling of error conditions (e.g. unhandled memory allocation errors).
+ESAN injects failures to selected standard library function calls.
+For example it can make malloc() fail and return NULL or ftello return -1 as return value.
+Failures injections are based on a provided map file, so it can be integrated with fuzzers like afl (American Fuzzy Lop) or custom solutions.
 It can be used to test how application behaves in unexpected conditions.
+It also useful in unit testing for checking rare corner cases without writing additional stubs.
 
 ## Execution workflow:
 1. ErrorSanitizer library internal initialization
-2. Read injections map from
+2. Read injections map from:
 
     a) file provided as argument
 
@@ -29,7 +31,7 @@ Now let\`s do the same using ErrorSanitizer.
    ```
 2. Compile project
 
-   Compile requirements: libssl-dev (for openssl hooks) and c compiler such as GNU gcc or clang
+   Compile requirements: libssl-dev (for openssl hooks) and C compiler such as GNU gcc or clang
 
     ```shell
     make
@@ -37,11 +39,11 @@ Now let\`s do the same using ErrorSanitizer.
 
 3. Execute sample binary:
 
-   To execute binary under ErrorSanitizer we will need to use LD_PRELOAD functionality.
+   To execute binary under ErrorSanitizer, we will need to use LD_PRELOAD functionality.
    It is used to inject the shared library before executing the target binary.
    Furthermore ErrorSanitizer needs to read failure map so it knows when to inject failures.
 
-   In this example we will use map that always succeed just to demonstate how to run sample binary.
+   In this example we will use map that always succeed just to demonstrate how to run sample binary.
 
    There are two posible execution variants:
 
