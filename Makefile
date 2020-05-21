@@ -17,7 +17,10 @@
 # Author: Jakub Botwicz <j.botwicz@samsung.com>
 # Author: Mateusz Nosek <m.nosek@samsung.com>
 #
-ESAN_PATH = $(shell pwd)
+ifeq (${ESAN_PATH},)
+	ESAN_PATH := $(shell realpath ./)
+endif
+
 TEST_PATH = ${ESAN_PATH}/tests
 HOOK_PATH = ${ESAN_PATH}/hooks
 LIB_PATH = ${ESAN_PATH}/in_library
@@ -27,18 +30,24 @@ CC ?= clang
 OBJCOPY	:= $(shell which objcopy)
 
 INCLUDE_FLAGS = -I${ESAN_PATH}/include
-# Shared CFLAGS between library and other components
 # Additional defines:
 # -DAFL - disable logging:
-#  on failure exit
-#  on failure inhection
-#  statistics on exit
+#    on failure exit
+#    on failure injection
+#    statistics on exit
+#  disable:
+#    statistics counting
 #
 # -DCP_WRONG_MAP - enable copying maps with wrong format to /tmp/esan_debug%d.txt
 #  where %d is random int, useful for debugging
 #
 # -DDEBUG - enable additional debug logging
-CFLAGS_SHARED = ${INCLUDE_FLAGS} -fPIC -Wall -Wextra -Werror -std=gnu89
+#
+# -DESAN_DISABLE_HOOKS_OPENSSL - disables openssl hooks
+
+
+# Shared CFLAGS between library and other components
+CFLAGS_SHARED = ${INCLUDE_FLAGS} -fPIC -Wall -Wextra -Werror -std=gnu89 -DESAN_DISABLE_HOOKS_OPENSSL
 # CFLAGS for other components
 CFLAGS = $(CFLAGS_LOCAL) ${CFLAGS_SHARED}
 LDFLAGS = $(LDFLAGS_LOCAL)

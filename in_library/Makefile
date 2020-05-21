@@ -16,7 +16,7 @@
 # Author: Ernest Borowski <e.borowski@samsung.com>
 #
 ifeq (${ESAN_PATH},)
-    $(error Please set ESAN_PATH variable before using this Makefile!)
+	ESAN_PATH := $(shell realpath ./../)
 endif
 
 GIT	:= $(shell which git)

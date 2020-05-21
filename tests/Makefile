@@ -18,7 +18,7 @@
 # Author: Mateusz Nosek <m.nosek@samsung.com>
 #
 ifeq (${ESAN_PATH},)
-    $(error Please set ESAN_PATH variable before using this Makefile!)
+	ESAN_PATH := $(shell realpath ./../)
 endif
 
 CC ?= clang
@@ -62,22 +62,19 @@ clean_test_files:
 	$(CC) -o $@ $< $(CFLAGS) $(LDFLAGS)
 
 %.elf.fail: %.c $(DEPS)
-	# ESAN_FAIL_TEST produces test binaries that should have failed, but didn't at test point
-	# e.g. test_fpen should have failed, but didn't at fopen
+# ESAN_FAIL_TEST produces test binaries that should fail, at test point
+# e.g. test_fpen should fail at fopen() call
 	$(CC) -o $@ $< $(CFLAGS) -DESAN_FAIL_TEST $(LDFLAGS)
 
 test_openssl.elf: test_openssl.o
 	$(CC) -o $@ $^ $(LDFLAGS) -lssl -lcrypto
 
 %.txt: %.elf
-	# temporary map file will be modified by esan
 	cp esan_always_succeed.map "esan_always_succeed.map.$<.cur_input"
 	LD_PRELOAD=${ESAN_PATH}/error_sanitizer_preload.so ./$< "esan_always_succeed.map.$<.cur_input"
 	rm -f "esan_always_succeed.map.$<.cur_input"
-#	AFL_USE_STDIO="YES" LD_PRELOAD=${ESAN_PATH}/error_sanitizer_preload.so ./$< < esan_always_succeed.map
 
-%fail.txt: %.elf.fail
-	# temporary map file will be modified by esan
+%fail.txt: esan_fail%.map
 	cp "esan_fail%.map" "esan_fail%.map.cur_input"
 	LD_PRELOAD=${ESAN_PATH}/error_sanitizer_preload.so ./$< "esan_fail%.map.cur_input"
 	rm -f "esan_fail%.map.cur_input"

@@ -42,10 +42,11 @@ enum ESAN_ERROR_CODE_E {
 		fflush(stderr);                                          \
 		exit(err_code);                                          \
 	} while (0)
-#endif
+#endif /* AFL */
 
 #define exit_success(message, args...) \
 	exit_failure(ESAN_SUCCESS, message, ##args)
+
 #ifdef DEBUG
 #define log(message, args...)                                            \
 	do {                                                             \

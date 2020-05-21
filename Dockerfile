@@ -22,7 +22,7 @@ ARG DEBIAN_FRONTEND="noninteractive"
 
 RUN apt-get -y update && \
 	apt-get -y upgrade && \
-	apt-get -y install curl gnupg2 libssl-dev && \
+	apt-get -y install curl gnupg2 && \
 	curl -L -- https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
 	echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main" \
 		>> /etc/apt/sources.list && \

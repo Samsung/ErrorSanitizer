@@ -17,6 +17,9 @@
     Author: Jakub Botwicz <j.botwicz@samsung.com>
     Author: Mateusz Nosek <m.nosek@samsung.com>
 */
+
+#ifndef ESAN_DISABLE_HOOKS_OPENSSL
+
 #include "hooks_include.h"
 
 #include <openssl/conf.h>
@@ -89,4 +92,5 @@ EVP_MD_CTX *EVP_MD_CTX_create(void)
 		return real_EVP_MD_CTX_create();
 	}
 }
-#endif
+#endif /* OPENSSL_VERSION_NUMBER */
+#endif /* ESAN_DISABLE_HOOKS_OPENSSL */

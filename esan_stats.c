@@ -43,8 +43,10 @@ static const char *const ESAN_FUNCTION_NAMES[ESAN_NR_FUNCTIONS] = {
 	"faccessat",
 	"chmod",
 	"fchmod",
+#ifndef ESAN_DISABLE_HOOKS_OPENSSL
 	"EVP_CIPHER_CTX_new",
 	"EVP_MD_CTX_create"
+#endif /* ESAN_DISABLE_HOOKS_OPENSSL */
 };
 
 void add_execution(enum ESAN_FUNCTIONS_E fun_name,
