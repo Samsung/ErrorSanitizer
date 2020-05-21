@@ -171,6 +171,7 @@ void in_library_destructor(void)
 	long library_it;
 	for (library_it = 0; library_it < current_address_idx; ++library_it) {
 		free(lib_addr_range[library_it].lib_name);
+		lib_addr_range[library_it].lib_name = NULL;
 	}
 #endif /* DEBUG */
 }
