@@ -14,6 +14,7 @@
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
     Author: Ernest Borowski <e.borowski@samsung.com>
+    Author: Mateusz Nosek <m.nosek@samsung.com>
 */
 #ifndef ESAN_STATS_H_
 #define ESAN_STATS_H_
@@ -31,7 +32,6 @@ enum ESAN_FUNCTIONS_E {
 	ESAN_REWIND,
 	ESAN_FTELL,
 	ESAN_FTELLO,
-	ESAN_FCNTL,
 	ESAN_ACCESS,
 	ESAN_FACCESSAT,
 	ESAN_CHMOD,

@@ -7,7 +7,6 @@ ErrorSanitizer currently supports hooks for:
 *  faccessat
 *  fchmod
 *  fclose
-*  fcntl
 *  fopen
 *  fputs
 *  ftell

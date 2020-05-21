@@ -14,6 +14,7 @@
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
     Author: Ernest Borowski <e.borowski@samsung.com>
+    Author: Mateusz Nosek <m.nosek@samsung.com>
 */
 #include "stats.h"
 #include <stdio.h>
@@ -38,7 +39,6 @@ static const char *const ESAN_FUNCTION_NAMES[ESAN_NR_FUNCTIONS] = {
 	"rewind",
 	"ftell",
 	"ftello",
-	"fcntl",
 	"access",
 	"faccessat",
 	"chmod",
