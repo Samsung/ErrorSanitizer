@@ -27,7 +27,7 @@ Now let's do the same using ErrorSanitizer.
 
 1. Clone project
    ```shell
-   git clone --recurse-submodules GIT_REPO
+   git clone --recurse-submodules https://github.com/Samsung/ErrorSanitizer
    ```
 2. Compile project
 
