@@ -4,7 +4,7 @@ ESAN injects failures to selected standard library function calls.
 For example it can make malloc() fail and return NULL or ftello return -1 as return value.
 Failures injections are based on a provided map file, so it can be integrated with fuzzers like afl (American Fuzzy Lop) or custom solutions.
 It can be used to test how application behaves in unexpected conditions.
-It also useful in unit testing for checking rare corner cases without writing additional stubs.
+It is also useful in unit testing for checking rare corner cases without writing additional stubs.
 
 ## Execution workflow:
 1. ErrorSanitizer library internal initialization
@@ -76,6 +76,10 @@ Now let's do the same using ErrorSanitizer.
       cat /etc/passwd < tests/esan_always_succeed.map
     ```
 
+## Tutorials
+
+If you want to read how to use ESAN on simple real-life applications - see [Tutorial 1 - ezxml](./doc/tutorial_000/desc.md).
+
 ## Map file Structure
 
 `_FAILURE_MAP_XXXX_OPTIONAL_SAMPLE_BINARY_DATA_`
@@ -95,7 +99,7 @@ The newly created file resides in the same path but the file extension is change
 This is done transparently for the tested application.
 
 ## Hooks
-The list of currently implemented hooks can be found in [Hooks](./Hooks.md) file.
+The list of currently implemented hooks can be found in the [Hooks](./doc/Hooks.md) section.
 
 ## AFL Integration
 1. Execute steps 1. and 2. from sample usage.
