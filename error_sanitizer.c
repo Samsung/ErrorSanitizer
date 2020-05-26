@@ -223,6 +223,7 @@ write_test_input_data(const char *original_file_path, char *test_data_ptr,
 	if (fclose(fp)) {
 		log("Unable to write: %ld bytes to: \"%s\" file.",
 		    test_data_size, tmp_file_path);
+		(void)remove(tmp_file_path);
 		free(tmp_file_path);
 		return ESAN_LIBRARY_FUNCTION_ERROR;
 	}
@@ -231,6 +232,7 @@ write_test_input_data(const char *original_file_path, char *test_data_ptr,
 	    rename(tmp_file_path, original_file_path) != 0) {
 		log("Unable to write: %s file or rename file to: %s.",
 		    tmp_file_path, original_file_path);
+		(void)remove(tmp_file_path);
 		free(tmp_file_path);
 		return ESAN_LIBRARY_FUNCTION_ERROR;
 	}
@@ -301,10 +303,12 @@ void parse_map(int argc, char **argv, const char *const *envp)
 
 		esan_error_bitmap = read_data_from_file(&esan_error_bitmap_size,
 							bitmap_path);
-		if (!esan_error_bitmap) {
-			parse_map_cleanup();
-			exit_failure(ESAN_INTERNAL_ERROR,
-				     "Unable to read input data.");
+		if (!esan_error_bitmap || 0 == esan_error_bitmap_size) {
+			free(esan_error_bitmap);
+			exit_failure(
+				ESAN_INTERNAL_ERROR,
+				"Unable to read input data. bitmap: %p, size: %ld",
+				esan_error_bitmap, esan_error_bitmap_size);
 		}
 		program_data_path = (char *)esan_getenv(
 			"ESAN_WRITE_PROGRAM_DATA_TO_MAP_FILE");
@@ -340,7 +344,7 @@ void parse_map(int argc, char **argv, const char *const *envp)
 			(void)write_file(buff, esan_error_bitmap,
 					 esan_error_bitmap_size);
 #endif
-			parse_map_cleanup();
+			free(esan_error_bitmap);
 			exit_failure(
 				ret_code,
 				"Unable to find input bitmap splitting point.");
@@ -354,7 +358,7 @@ void parse_map(int argc, char **argv, const char *const *envp)
 			esan_error_bitmap_size -
 				(after_split_prt - esan_error_bitmap));
 		if (ret_code != ESAN_SUCCESS) {
-			parse_map_cleanup();
+			free(esan_error_bitmap);
 			exit_failure(ret_code, "Unable to write test data.");
 		}
 		esan_error_bitmap_size =
