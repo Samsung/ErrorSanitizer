@@ -172,17 +172,11 @@ Each of core dumps provide different (unique) crash cause - so you have identifi
 
 Now we will perform fuzzing the binary using afl (American Fuzzy Lop):
 
-13. Compile binary for afl
-
-Change the compiler in `GNUmakefile` line 24 to the following afl wrapper (performing instrumentation required by the afl):
-```
-CC = afl-gcc
-```
-Recompile binary:
+13. Recompile binary for afl:
 
 ```
 make clean
-make test
+CC=afl-gcc make test
 ```
 
 14. Prepare fuzzing environment (input, output directory, first test file and environment variables):
@@ -193,12 +187,12 @@ mkdir testcase_dir
 mkdir findings_dir
 cp esan_always_succeed.map testcase_dir/test_000
 cat test_000.xml >> testcase_dir/test_000
-AFL_PRELOAD=ESAN_DIR/error_sanitizer_preload.so
-AFL_NO_FORKSRV=1
 ```
 
 15. Start fuzzing:
 ```
+AFL_PRELOAD=ESAN_DIR/error_sanitizer_preload.so
+AFL_NO_FORKSRV=1
 afl-fuzz -i testcase_dir/ -o findings_dir/ -m none ./ezxmltest @@
 ```
 
@@ -218,6 +212,10 @@ If you want to fuzz without changing the input file (only changing the map) use 
 
 ```
 AFL_USE_STDIO="Y" afl-fuzz -i testcase_dir/ -o findings_dir/ -m none ./ezxmltest test_000.xml
+```
+or use:
+```
+AFL_MAP_FILEPATH="esan.map" afl-fuzz -f "esan.map" -i testcase_dir/ -o findings_dir/ -m none ./ezxmltest test_000.xml
 ```
 
 Fuzzing map will be provided to the ESAN using standard input.
