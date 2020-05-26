@@ -105,12 +105,13 @@ The list of currently implemented hooks can be found in the [Hooks](./doc/Hooks.
 1. Execute steps 1. and 2. from sample usage.
 2. Add necessary environment variables:
    ```shell
-   AFL_PRELOAD=PATH_TO_ESAN.SO
+   AFL_PRELOAD=PATH_TO_ESAN/error_sanitizer_preload.so
    AFL_NO_FORKSRV=1
    ```
    Make sure to use the absolute file path.
 
-3. Execute afl-fuzz:
+3. Compile tested binary using afl wrappers (e.g. afl-gcc, afl-clang-fast)
+4. Execute afl-fuzz:
    ```shell
    afl-fuzz -i PATH_TO_INPUT_DIR -o PATH_TO_OUTPUT_DIR -m none TARGET_BINARY @@
    ```

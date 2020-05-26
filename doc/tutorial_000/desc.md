@@ -170,3 +170,55 @@ You can see in the source file what happened in ezxml.c:838.
 
 Each of core dumps provide different (unique) crash cause - so you have identified 4 unique vulnerabilities!
 
+Now we will perform fuzzing the binary using afl (American Fuzzy Lop):
+
+13. Compile binary for afl
+
+Change the compiler in `GNUmakefile` line 24 to the following afl wrapper (performing instrumentation required by the afl):
+```
+CC = afl-gcc
+```
+Recompile binary:
+
+```
+make clean
+make test
+```
+
+14. Prepare fuzzing environment (input, output directory, first test file and environment variables):
+
+(ESAN_DIR is the directory where ESAN compilation results are available)
+```
+mkdir testcase_dir
+mkdir findings_dir
+cp esan_always_succeed.map testcase_dir/test_000
+cat test_000.xml >> testcase_dir/test_000
+AFL_PRELOAD=ESAN_DIR/error_sanitizer_preload.so
+AFL_NO_FORKSRV=1
+```
+
+15. Start fuzzing:
+```
+afl-fuzz -i testcase_dir/ -o findings_dir/ -m none ./ezxmltest @@
+```
+
+You should quickly see a lot of crashes found by afl.
+
+Crashing testfiles are located in `findings_dir/crashes/`, while other testfiles are located in `findings_dir/queue/`.
+
+To manualy analyze crashes run (change ... to the rest of the filename of the selected crash):
+```
+cp findings_dir/crashes/id\:00... crash_000.cur_input
+LD_PRELOAD="ESAN_DIR/error_sanitizer_preload.so" ./ezxmltest crash_000.cur_input
+```
+
+16.
+
+If you want to fuzz without changing the input file (only changing the map) use the following syntax:
+
+```
+AFL_USE_STDIO="Y" afl-fuzz -i testcase_dir/ -o findings_dir/ -m none ./ezxmltest test_000.xml
+```
+
+Fuzzing map will be provided to the ESAN using standard input.
+
