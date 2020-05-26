@@ -40,6 +40,7 @@ char *real_strdup(const char *s)
 char *strdup(const char *s)
 {
 	if (esan_should_I_fail(__builtin_return_address(0), ESAN_STRDUP)) {
+		errno = ENOMEM;
 		return NULL;
 	} else {
 		return real_strdup(s);
@@ -69,6 +70,7 @@ char *real_strndup(const char *s, size_t n)
 char *strndup(const char *s, size_t n)
 {
 	if (esan_should_I_fail(__builtin_return_address(0), ESAN_STRNDUP)) {
+		errno = ENOMEM;
 		return NULL;
 	} else {
 		return real_strndup(s, n);

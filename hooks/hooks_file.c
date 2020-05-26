@@ -40,6 +40,7 @@ FILE *real_fopen(const char *filename, const char *mode)
 FILE *fopen(const char *filename, const char *mode)
 {
 	if (esan_should_I_fail(__builtin_return_address(0), ESAN_FOPEN)) {
+		errno = EINTR;
 		return NULL;
 	} else {
 		return real_fopen(filename, mode);
@@ -67,6 +68,7 @@ off_t real_ftello(FILE *stream)
 off_t ftello(FILE *stream)
 {
 	if (esan_should_I_fail(__builtin_return_address(0), ESAN_FTELLO)) {
+		errno = EIO;
 		return -1;
 	} else {
 		return real_ftello(stream);
@@ -128,6 +130,7 @@ int real_fclose(FILE *stream)
 int fclose(FILE *stream)
 {
 	if (esan_should_I_fail(__builtin_return_address(0), ESAN_FCLOSE)) {
+		errno = EIO;
 		return EOF;
 	} else {
 		return real_fclose(stream);

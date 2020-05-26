@@ -43,6 +43,7 @@ void *real_calloc(size_t num, size_t size)
 void *calloc(size_t num, size_t size)
 {
 	if (esan_should_I_fail(__builtin_return_address(0), ESAN_CALLOC)) {
+		errno = ENOMEM;
 		return NULL;
 	} else {
 		return real_calloc(num, size);
@@ -70,6 +71,7 @@ void *real_malloc(size_t size)
 void *malloc(size_t size)
 {
 	if (esan_should_I_fail(__builtin_return_address(0), ESAN_MALLOC)) {
+		errno = ENOMEM;
 		return NULL;
 	} else {
 		return real_malloc(size);
@@ -99,6 +101,7 @@ void *real_realloc(void *ptr, size_t new_size)
 void *realloc(void *ptr, size_t new_size)
 {
 	if (esan_should_I_fail(__builtin_return_address(0), ESAN_REALLOC)) {
+		errno = ENOMEM;
 		return NULL;
 	} else {
 		return real_realloc(ptr, new_size);

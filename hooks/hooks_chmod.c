@@ -37,6 +37,7 @@ int real_chmod(const char *path, mode_t mode)
 int chmod(const char *path, mode_t mode)
 {
 	if (esan_should_I_fail(__builtin_return_address(0), ESAN_CHMOD)) {
+		errno = EIO;
 		return -1;
 	} else {
 		return real_chmod(path, mode);
@@ -64,6 +65,7 @@ int real_fchmod(int fd, mode_t mode)
 int fchmod(int fd, mode_t mode)
 {
 	if (esan_should_I_fail(__builtin_return_address(0), ESAN_FCHMOD)) {
+		errno = EIO;
 		return -1;
 	} else {
 		return real_fchmod(fd, mode);

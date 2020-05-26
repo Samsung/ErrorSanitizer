@@ -37,6 +37,7 @@ int real_access(const char *pathname, int mode)
 int access(const char *pathname, int mode)
 {
 	if (esan_should_I_fail(__builtin_return_address(0), ESAN_ACCESS)) {
+		errno = EIO;
 		return -1;
 	} else {
 		return real_access(pathname, mode);
@@ -66,6 +67,7 @@ int real_faccessat(int dirfd, const char *pathname, int mode, int flags)
 int faccessat(int dirfd, const char *pathname, int mode, int flags)
 {
 	if (esan_should_I_fail(__builtin_return_address(0), ESAN_FACCESSAT)) {
+		errno = EIO;
 		return -1;
 	} else {
 		return real_faccessat(dirfd, pathname, mode, flags);
