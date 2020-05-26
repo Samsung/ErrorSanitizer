@@ -19,18 +19,37 @@
 */
 #include "error_sanitizer.h"
 #include "error_sanitizer_preload.h"
+#include "esan_mutex.h"
 #include "in_library.h"
+#include "log.h"
 #include "stats.h"
 
 void lib_init(int argc, char **argv, char **envp)
 {
+	static unsigned execute_once = 0;
+
+	esan_mutex_lock();
+	if (execute_once++) {
+		log("lib_init called %u times.", execute_once);
+		esan_mutex_unlock();
+		return;
+	}
 	parse_map(argc, argv, (const char *const *)envp);
 	in_library_initialize();
 	esan_enable_map_based_failure();
+	esan_mutex_unlock();
 }
 
 void lib_exit(void)
 {
+	static unsigned execute_once = 0;
+
+	esan_mutex_lock();
+	if (execute_once++) {
+		log("lib_exit called %u times.", execute_once);
+		esan_mutex_unlock();
+		return;
+	}
 	esan_disable_failure();
 #ifndef AFL
 	esan_print_stats();
@@ -41,4 +60,5 @@ void lib_exit(void)
 	if (stderr && fileno(stderr) >= 0)
 		fflush(stderr);
 #endif
+	esan_mutex_unlock();
 }

@@ -19,13 +19,16 @@
 #include "in_library.h"
 #include "error_sanitizer.h"
 #include "esan_fail.h"
+#include "esan_mutex.h"
 #include "esan_visibility.h"
 #include "stats.h"
 
 static enum ESAN_FAILURE_STATUS_E esan_always_succeed = ESAN_ALWAYS_SUCCEED;
 static void esan_set_failure_status(enum ESAN_FAILURE_STATUS_E failure_status)
 {
+	esan_mutex_lock();
 	esan_always_succeed = failure_status;
+	esan_mutex_unlock();
 }
 void esan_disable_failure(void)
 {
@@ -41,12 +44,19 @@ void esan_enable_always_failure(void)
 }
 enum ESAN_FAILURE_STATUS_E esan_get_failure_status(void)
 {
-	return esan_always_succeed;
+	enum ESAN_FAILURE_STATUS_E ret;
+	esan_mutex_lock();
+	ret = esan_always_succeed;
+	esan_mutex_unlock();
+	return ret;
 }
 enum ESAN_FAILURE_STATUS_E esan_get_and_disable_failure(void)
 {
-	enum ESAN_FAILURE_STATUS_E current_status = esan_always_succeed;
+	enum ESAN_FAILURE_STATUS_E current_status;
+	esan_mutex_lock();
+	current_status = esan_always_succeed;
 	esan_always_succeed = ESAN_ALWAYS_SUCCEED;
+	esan_mutex_unlock();
 	return current_status;
 }
 
@@ -69,9 +79,13 @@ static enum ESAN_FAILURE_E get_failure_status_from_map(void)
 HIDE enum ESAN_FAILURE_E esan_should_I_fail(const void *caller_addr,
 					    enum ESAN_FUNCTIONS_E hook)
 {
-	enum ESAN_FAILURE_STATUS_E failure_status = esan_get_failure_status();
+	enum ESAN_FAILURE_STATUS_E failure_status;
 	enum ESAN_FAILURE_E ret_code;
-	int in_lib = in_library(caller_addr);
+	int in_lib;
+
+	esan_mutex_lock();
+	failure_status = esan_get_failure_status();
+	in_lib = in_library(caller_addr);
 	if (failure_status == ESAN_ALWAYS_SUCCEED || in_lib)
 		ret_code = ESAN_SUCCEED;
 	else if (failure_status == ESAN_ALWAYS_FAIL)
@@ -86,5 +100,6 @@ HIDE enum ESAN_FAILURE_E esan_should_I_fail(const void *caller_addr,
 #else
 	(void)hook;
 #endif
+	esan_mutex_unlock();
 	return ret_code;
 }
