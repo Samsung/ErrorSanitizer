@@ -34,6 +34,8 @@ int real_chmod(const char *path, mode_t mode)
 	exit(-1);
 }
 
+// parameter names starting with __ are reserved for standard library
+// NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name)
 int chmod(const char *path, mode_t mode)
 {
 	if (esan_should_I_fail(__builtin_return_address(0), ESAN_CHMOD)) {
@@ -62,6 +64,8 @@ int real_fchmod(int fd, mode_t mode)
 	exit(-1);
 }
 
+// parameter names starting with __ are reserved for standard library
+// NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name)
 int fchmod(int fd, mode_t mode)
 {
 	if (esan_should_I_fail(__builtin_return_address(0), ESAN_FCHMOD)) {

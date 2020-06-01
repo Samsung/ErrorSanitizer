@@ -68,6 +68,8 @@ void *real_malloc(size_t size)
 	exit(-1);
 }
 
+// parameter names starting with __ are reserved for standard library
+// NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name)
 void *malloc(size_t size)
 {
 	if (esan_should_I_fail(__builtin_return_address(0), ESAN_MALLOC)) {

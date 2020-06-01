@@ -34,6 +34,8 @@ int real_access(const char *pathname, int mode)
 	exit(-1);
 }
 
+// parameter names starting with __ are reserved for standard library
+// NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name)
 int access(const char *pathname, int mode)
 {
 	if (esan_should_I_fail(__builtin_return_address(0), ESAN_ACCESS)) {
@@ -64,6 +66,8 @@ int real_faccessat(int dirfd, const char *pathname, int mode, int flags)
 	exit(-1);
 }
 
+// parameter names starting with __ are reserved for standard library
+// NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name)
 int faccessat(int dirfd, const char *pathname, int mode, int flags)
 {
 	if (esan_should_I_fail(__builtin_return_address(0), ESAN_FACCESSAT)) {

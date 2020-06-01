@@ -65,6 +65,8 @@ off_t real_ftello(FILE *stream)
 	exit(-1);
 }
 
+// parameter names starting with __ are reserved for standard library
+// NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name)
 off_t ftello(FILE *stream)
 {
 	if (esan_should_I_fail(__builtin_return_address(0), ESAN_FTELLO)) {
@@ -93,6 +95,8 @@ long real_ftell(FILE *stream)
 	exit(-1);
 }
 
+// parameter names starting with __ are reserved for standard library
+// NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name)
 long ftell(FILE *stream)
 {
 	if (esan_should_I_fail(__builtin_return_address(0), ESAN_FTELL)) {
@@ -127,6 +131,8 @@ int real_fclose(FILE *stream)
 	exit(-1);
 }
 
+// parameter names starting with __ are reserved for standard library
+// NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name)
 int fclose(FILE *stream)
 {
 	if (esan_should_I_fail(__builtin_return_address(0), ESAN_FCLOSE)) {
@@ -156,6 +162,8 @@ void real_rewind(FILE *stream)
 	}
 }
 
+// parameter names starting with __ are reserved for standard library
+// NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name)
 void rewind(FILE *stream)
 {
 	if (esan_should_I_fail(__builtin_return_address(0), ESAN_REWIND)) {

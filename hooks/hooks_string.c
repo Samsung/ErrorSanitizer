@@ -37,6 +37,8 @@ char *real_strdup(const char *s)
 	exit(-1);
 }
 
+// parameter names starting with __ are reserved for standard library
+// NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name)
 char *strdup(const char *s)
 {
 	if (esan_should_I_fail(__builtin_return_address(0), ESAN_STRDUP)) {

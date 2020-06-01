@@ -49,6 +49,8 @@ EVP_CIPHER_CTX *real_EVP_CIPHER_CTX_new(void)
 	exit(-1);
 }
 
+// parameter names starting with __ are reserved for standard library
+// NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name)
 EVP_CIPHER_CTX *EVP_CIPHER_CTX_new(void)
 {
 	if (esan_should_I_fail(__builtin_return_address(0),
@@ -83,6 +85,8 @@ EVP_MD_CTX *real_EVP_MD_CTX_create(void)
 	exit(-1);
 }
 
+// parameter names starting with __ are reserved for standard library
+// NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name)
 EVP_MD_CTX *EVP_MD_CTX_create(void)
 {
 	if (esan_should_I_fail(__builtin_return_address(0),
