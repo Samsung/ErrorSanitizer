@@ -23,7 +23,7 @@
 
 typedef FILE *(*fopen_func_t)(const char *filename, const char *mode);
 
-FILE *real_fopen(const char *filename, const char *mode)
+static FILE *real_fopen(const char *filename, const char *mode)
 {
 	static fopen_func_t fopen_func_ptr = NULL;
 	if (NULL == fopen_func_ptr)
@@ -53,7 +53,7 @@ FILE *fopen(const char *filename, const char *mode)
 
 typedef off_t (*ftello_func_t)(FILE *stream);
 
-off_t real_ftello(FILE *stream)
+static off_t real_ftello(FILE *stream)
 {
 	static ftello_func_t ftello_func_ptr = NULL;
 	if (NULL == ftello_func_ptr)
@@ -83,7 +83,7 @@ off_t ftello(FILE *stream)
 
 typedef long (*ftell_func_t)(FILE *stream);
 
-long real_ftell(FILE *stream)
+static long real_ftell(FILE *stream)
 {
 	static ftell_func_t ftell_func_ptr = NULL;
 	if (NULL == ftell_func_ptr)
@@ -119,7 +119,7 @@ long ftell(FILE *stream)
 
 typedef int (*fclose_func_t)(FILE *stream);
 
-int real_fclose(FILE *stream)
+static int real_fclose(FILE *stream)
 {
 	static fclose_func_t fclose_func_ptr = NULL;
 	if (NULL == fclose_func_ptr)
@@ -149,7 +149,7 @@ int fclose(FILE *stream)
 
 typedef void (*rewind_func_t)(FILE *stream);
 
-void real_rewind(FILE *stream)
+static void real_rewind(FILE *stream)
 {
 	static rewind_func_t rewind_func_ptr = NULL;
 	if (NULL == rewind_func_ptr)
@@ -182,7 +182,7 @@ void rewind(FILE *stream)
 
 typedef int (*fputs_func_t)(const char *str, FILE *stream);
 
-int real_fputs(const char *str, FILE *stream)
+static int real_fputs(const char *str, FILE *stream)
 {
 	static fputs_func_t fputs_func_ptr = NULL;
 	if (NULL == fputs_func_ptr)

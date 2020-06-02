@@ -25,7 +25,7 @@
 
 typedef char *(*strdup_func_t)(const char *s);
 
-char *real_strdup(const char *s)
+static char *real_strdup(const char *s)
 {
 	static strdup_func_t strdup_func_ptr = NULL;
 	if (NULL == strdup_func_ptr)
@@ -55,7 +55,7 @@ char *strdup(const char *s)
 
 typedef char *(*strndup_func_t)(const char *s, size_t n);
 
-char *real_strndup(const char *s, size_t n)
+static char *real_strndup(const char *s, size_t n)
 {
 	static strndup_func_t strndup_func_ptr = NULL;
 	if (NULL == strndup_func_ptr)

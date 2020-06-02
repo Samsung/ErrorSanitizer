@@ -31,12 +31,12 @@
 
 typedef EVP_CIPHER_CTX *(*EVP_CIPHER_CTX_new_func_t)(void);
 
-EVP_CIPHER_CTX *esan_on_fail_EVP_CIPHER_CTX_new(void)
+static EVP_CIPHER_CTX *esan_on_fail_EVP_CIPHER_CTX_new(void)
 {
 	return NULL;
 }
 
-EVP_CIPHER_CTX *real_EVP_CIPHER_CTX_new(void)
+static EVP_CIPHER_CTX *real_EVP_CIPHER_CTX_new(void)
 {
 	static EVP_CIPHER_CTX_new_func_t EVP_CIPHER_CTX_new_func_ptr = NULL;
 	if (NULL == EVP_CIPHER_CTX_new_func_ptr)
@@ -67,12 +67,12 @@ EVP_CIPHER_CTX *EVP_CIPHER_CTX_new(void)
 
 typedef EVP_MD_CTX *(*EVP_MD_CTX_create_func_t)(void);
 
-EVP_MD_CTX *esan_on_fail_EVP_MD_CTX_create(void)
+static EVP_MD_CTX *esan_on_fail_EVP_MD_CTX_create(void)
 {
 	return NULL;
 }
 
-EVP_MD_CTX *real_EVP_MD_CTX_create(void)
+static EVP_MD_CTX *real_EVP_MD_CTX_create(void)
 {
 	static EVP_MD_CTX_create_func_t EVP_MD_CTX_create_func_ptr = NULL;
 	if (NULL == EVP_MD_CTX_create_func_ptr)

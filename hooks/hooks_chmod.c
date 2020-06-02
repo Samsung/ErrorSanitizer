@@ -22,7 +22,7 @@
 
 typedef int (*chmod_func_t)(const char *path, mode_t mode);
 
-int real_chmod(const char *path, mode_t mode)
+static int real_chmod(const char *path, mode_t mode)
 {
 	static chmod_func_t chmod_func_ptr = NULL;
 	if (NULL == chmod_func_ptr)
@@ -52,7 +52,7 @@ int chmod(const char *path, mode_t mode)
 
 typedef int (*fchmod_func_t)(int fd, mode_t mode);
 
-int real_fchmod(int fd, mode_t mode)
+static int real_fchmod(int fd, mode_t mode)
 {
 	static fchmod_func_t fchmod_func_ptr = NULL;
 	if (NULL == fchmod_func_ptr)

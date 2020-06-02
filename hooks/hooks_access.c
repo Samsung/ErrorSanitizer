@@ -22,7 +22,7 @@
 
 typedef int (*access_func_t)(const char *pathname, int mode);
 
-int real_access(const char *pathname, int mode)
+static int real_access(const char *pathname, int mode)
 {
 	static access_func_t access_func_ptr = NULL;
 	if (NULL == access_func_ptr)
@@ -53,7 +53,7 @@ int access(const char *pathname, int mode)
 typedef int (*faccessat_func_t)(int dirfd, const char *pathname, int mode,
 				int flags);
 
-int real_faccessat(int dirfd, const char *pathname, int mode, int flags)
+static int real_faccessat(int dirfd, const char *pathname, int mode, int flags)
 {
 	static faccessat_func_t faccessat_func_ptr = NULL;
 	if (NULL == faccessat_func_ptr)

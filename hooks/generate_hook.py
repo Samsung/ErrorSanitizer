@@ -32,13 +32,13 @@ def generate_hook(func_definition, func_name, func_return_value, func_full_param
 
 typedef {func_return_value}(*{func_name}_func_t) {func_full_params};
 
-{func_return_value} esan_on_fail_{func_name}{func_full_params}
+static {func_return_value} esan_on_fail_{func_name}{func_full_params}
 {{
     /* TODO implement below action performed on failure of hooked function */
     return ({func_return_value})NULL;
 }}
 
-{func_return_value} real_{func_name}{func_full_params}
+static {func_return_value} real_{func_name}{func_full_params}
 {{
     static {func_name}_func_t {func_name}_func_ptr = NULL;
     if (NULL == {func_name}_func_ptr)

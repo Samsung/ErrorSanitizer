@@ -24,7 +24,7 @@
 /* void* calloc(size_t num, size_t size); */
 
 typedef void *(*calloc_func_t)(size_t num, size_t size);
-void *real_calloc(size_t num, size_t size)
+static void *real_calloc(size_t num, size_t size)
 {
 	void *tmp;
 	size_t it;
@@ -56,7 +56,7 @@ void *calloc(size_t num, size_t size)
 
 typedef void *(*malloc_func_t)(size_t size);
 
-void *real_malloc(size_t size)
+static void *real_malloc(size_t size)
 {
 	static malloc_func_t malloc_func_ptr = NULL;
 	if (NULL == malloc_func_ptr)
@@ -86,7 +86,7 @@ void *malloc(size_t size)
 
 typedef void *(*realloc_func_t)(void *ptr, size_t new_size);
 
-void *real_realloc(void *ptr, size_t new_size)
+static void *real_realloc(void *ptr, size_t new_size)
 {
 	static realloc_func_t realloc_func_ptr = NULL;
 	if (NULL == realloc_func_ptr)
