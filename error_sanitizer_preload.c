@@ -37,4 +37,8 @@ void lib_exit(void)
 #endif
 	parse_map_cleanup();
 	in_library_destructor();
+#ifndef AFL
+	if (stderr && fileno(stderr) >= 0)
+		fflush(stderr);
+#endif
 }

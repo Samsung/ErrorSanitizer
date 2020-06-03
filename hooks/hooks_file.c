@@ -135,6 +135,13 @@ static int real_fclose(FILE *stream)
 // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name)
 int fclose(FILE *stream)
 {
+#ifndef AFL
+	// fake closing stderr, it is needed for statistics && logging
+	if (stream == stderr) {
+		log("Fake closing stderr file stream.");
+		return 0;
+	}
+#endif
 	if (esan_should_I_fail(__builtin_return_address(0), ESAN_FCLOSE)) {
 		errno = EIO;
 		return EOF;
