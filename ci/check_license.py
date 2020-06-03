@@ -90,7 +90,8 @@ def process_files(repair_files, check_all_files, display_diff, colorize_output):
                                  universal_newlines=True)
     wrong_license_files = []
     wrong_extensions = ['.map', '.txt', '.gitignore', '.clang-format', '.clang-format-ignore',
-                       '.gitmodules', '.md']
+                       '.gitmodules', '.md', '.json', '.xml', '.log', '.csv', '.html', '.css',
+                        '.pdf', '.rtf']
     tmp_files = set()
     for file in process.stdout.split('\0'):
         authors = set()
