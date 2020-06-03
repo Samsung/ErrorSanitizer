@@ -16,6 +16,7 @@
     Author: Ernest Borowski <e.borowski@samsung.com>
     Author: Mateusz Nosek <m.nosek@samsung.com>
 */
+#include "esan_visibility.h"
 #include "stats.h"
 #include <stdio.h>
 
@@ -24,7 +25,7 @@ typedef struct stats {
 	unsigned long esan_nr_failed_executions;
 } stats;
 
-struct stats obj_stats[ESAN_NR_FUNCTIONS];
+static struct stats obj_stats[ESAN_NR_FUNCTIONS];
 
 static const char *const ESAN_FUNCTION_NAMES[ESAN_NR_FUNCTIONS] = {
 	"calloc",
@@ -49,8 +50,8 @@ static const char *const ESAN_FUNCTION_NAMES[ESAN_NR_FUNCTIONS] = {
 #endif /* ESAN_DISABLE_HOOKS_OPENSSL */
 };
 
-void add_execution(enum ESAN_FUNCTIONS_E fun_name,
-		   enum ESAN_FAILURE_E fail_status)
+HIDE void add_execution(enum ESAN_FUNCTIONS_E fun_name,
+			enum ESAN_FAILURE_E fail_status)
 {
 	obj_stats[fun_name].esan_nr_executions++;
 	obj_stats[fun_name].esan_nr_failed_executions += fail_status;

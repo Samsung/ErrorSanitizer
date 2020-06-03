@@ -13,26 +13,15 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
-    Author: Ernest Borowski <e.borowski@samsung.com>
     Author: Mateusz Nosek <m.nosek@samsung.com>
 */
-#ifndef ESAN_FAIL_H
-#define ESAN_FAIL_H
+#ifndef ESAN_VISIBILITY_H
+#define ESAN_VISIBILITY_H
 
-#include "stats.h"
+#ifndef DEBUG
+#define HIDE __attribute__((visibility("hidden")))
+#else
+#define HIDE
+#endif
 
-enum ESAN_FAILURE_STATUS_E {
-	ESAN_ALWAYS_SUCCEED,
-	ESAN_ALWAYS_FAIL,
-	ESAN_MAP_BASED_FAILURE,
-};
-
-void esan_disable_failure(void);
-void esan_enable_always_failure(void);
-void esan_enable_map_based_failure(void);
-enum ESAN_FAILURE_STATUS_E esan_get_and_disable_failure(void);
-enum ESAN_FAILURE_STATUS_E esan_get_failure_status(void);
-enum ESAN_FAILURE_E esan_should_I_fail(const void *caller_addr,
-				       enum ESAN_FUNCTIONS_E hook);
-
-#endif /* ESAN_FAIL_H */
+#endif /* ESAN_VISIBILITY_H */

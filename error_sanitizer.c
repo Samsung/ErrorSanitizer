@@ -26,11 +26,12 @@
 #include <unistd.h>
 
 #include "error_sanitizer.h"
+#include "esan_visibility.h"
 #include "log.h"
 
 #define MAX_LINE_LENGTH (32 * 4096ul)
-char *esan_error_bitmap = NULL;
-size_t esan_error_bitmap_size = 0;
+HIDE char *esan_error_bitmap = NULL;
+HIDE size_t esan_error_bitmap_size = 0;
 
 static const char SPLIT_STRING[] = "XXXX";
 // do not include null byte '\0' when counting string size
@@ -273,7 +274,7 @@ static const char *esan_getenv(const char *env)
 	return NULL;
 }
 
-void parse_map(int argc, char **argv, const char *const *envp)
+HIDE void parse_map(int argc, char **argv, const char *const *envp)
 {
 	esan_envp = envp;
 	char *bitmap_path, *program_data_path;
@@ -372,7 +373,7 @@ void parse_map(int argc, char **argv, const char *const *envp)
 	    esan_error_bitmap_size);
 }
 
-void parse_map_cleanup(void)
+HIDE void parse_map_cleanup(void)
 {
 	int ret_code;
 	free(esan_error_bitmap);

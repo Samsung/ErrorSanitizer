@@ -14,12 +14,14 @@
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
     Author: Ernest Borowski <e.borowski@samsung.com>
+    Author: Mateusz Nosek <m.nosek@samsung.com>
 */
 #include <regex.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "esan_visibility.h"
 #include "in_library.h"
 #include "log.h"
 
@@ -151,7 +153,7 @@ static void parse_file(void)
 	regfree(&compiledReg);
 }
 
-void in_library_initialize(void)
+HIDE void in_library_initialize(void)
 {
 	unsigned long library_it;
 
@@ -165,7 +167,7 @@ void in_library_initialize(void)
 	parse_file();
 }
 
-void in_library_destructor(void)
+HIDE void in_library_destructor(void)
 {
 #ifdef DEBUG
 	long library_it;
@@ -176,7 +178,7 @@ void in_library_destructor(void)
 #endif /* DEBUG */
 }
 
-int in_library(const void *address)
+HIDE int in_library(const void *address)
 {
 	long library_it;
 	unsigned long addr;

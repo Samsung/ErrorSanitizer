@@ -14,24 +14,30 @@
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
     Author: Ernest Borowski <e.borowski@samsung.com>
+    Author: Mateusz Nosek <m.nosek@samsung.com>
 */
-#include "esan_fail.h"
-#include "error_sanitizer.h"
 #include "in_library.h"
+#include "error_sanitizer.h"
+#include "esan_fail.h"
+#include "esan_visibility.h"
 #include "stats.h"
 
 static enum ESAN_FAILURE_STATUS_E esan_always_succeed = ESAN_ALWAYS_SUCCEED;
+static void esan_set_failure_status(enum ESAN_FAILURE_STATUS_E failure_status)
+{
+	esan_always_succeed = failure_status;
+}
 void esan_disable_failure(void)
 {
-	esan_always_succeed = ESAN_ALWAYS_SUCCEED;
+	esan_set_failure_status(ESAN_ALWAYS_SUCCEED);
 }
 void esan_enable_map_based_failure(void)
 {
-	esan_always_succeed = ESAN_MAP_BASED_FAILURE;
+	esan_set_failure_status(ESAN_MAP_BASED_FAILURE);
 }
 void esan_enable_always_failure(void)
 {
-	esan_always_succeed = ESAN_ALWAYS_FAIL;
+	esan_set_failure_status(ESAN_ALWAYS_FAIL);
 }
 enum ESAN_FAILURE_STATUS_E esan_get_failure_status(void)
 {
@@ -42,10 +48,6 @@ enum ESAN_FAILURE_STATUS_E esan_get_and_disable_failure(void)
 	enum ESAN_FAILURE_STATUS_E current_status = esan_always_succeed;
 	esan_always_succeed = ESAN_ALWAYS_SUCCEED;
 	return current_status;
-}
-void esan_set_failure_status(enum ESAN_FAILURE_STATUS_E failure_status)
-{
-	esan_always_succeed = failure_status;
 }
 
 static unsigned long esan_total_execs = 0;
@@ -64,8 +66,8 @@ static enum ESAN_FAILURE_E get_failure_status_from_map(void)
 		(unsigned char)esan_error_bitmap[index_byte]);
 }
 
-enum ESAN_FAILURE_E esan_should_I_fail(const void *caller_addr,
-				       enum ESAN_FUNCTIONS_E hook)
+HIDE enum ESAN_FAILURE_E esan_should_I_fail(const void *caller_addr,
+					    enum ESAN_FUNCTIONS_E hook)
 {
 	enum ESAN_FAILURE_STATUS_E failure_status = esan_get_failure_status();
 	enum ESAN_FAILURE_E ret_code;
