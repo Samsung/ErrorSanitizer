@@ -113,9 +113,8 @@ $(ESAN_INIT_OBJ_API): $(ESAN_INIT_OBJ_HIDDEN)
 		--globalize-symbol=parse_map \
 		--globalize-symbol=parse_map_cleanup $< $@
 
-error_sanitizer_preload.so: $(ESAN_INIT_OBJ_API) $(HOOK_OBJ) $(LIB_OBJ)
-	$(CC) $(CFLAGS_LIB) -o $@ $(ESAN_INIT_OBJ_API) $(HOOK_OBJ) ${PRELOAD_SRC} $(LIB_OBJ)  \
-		$(LDFLAGS_LIB)
+error_sanitizer_preload.so: $(ESAN_INIT_OBJ_API) $(HOOK_OBJ) ${PRELOAD_SRC} $(LIB_OBJ)
+	$(CC) $(CFLAGS_LIB) -o $@ $^ $(LDFLAGS_LIB)
 
 clean: hook_clean test_clean lib_clean
 	rm -f $(LIBS) $(HOOK_OBJ) $(ESAN_INIT_OBJ) $(ESAN_INIT_OBJ_LINKED) $(ESAN_INIT_OBJ_HIDDEN) \
