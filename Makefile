@@ -56,16 +56,10 @@ CFLAGS_LIB = $(CFLAGS_LIB_LOCAL) ${CFLAGS_SHARED}
 LDFLAGS_LIB = $(LDFLAGS_LIB_LOCAL) -shared -ldl
 
 HOOK_OBJ = ${HOOK_PATH}/hooks.o
-LIB_OBJ = ${LIB_PATH}/in_library_api.o
 CFLAGS_COVERAGE = -fprofile-arcs -ftest-coverage -ggdb
 LDFLAGS_COVERAGE = -lgcov --coverage
 
-PRELOAD_SRC     = error_sanitizer_preload.c esan_stats.c esan_fail.c
-
-ESAN_INIT_OBJ := error_sanitizer.o
-ESAN_INIT_OBJ_LINKED := error_sanitizer_linked.o
-ESAN_INIT_OBJ_HIDDEN := error_sanitizer_hidden.o
-ESAN_INIT_OBJ_API := error_sanitizer_api.o
+PRELOAD_SRC     = error_sanitizer_preload.c esan_stats.c esan_fail.c error_sanitizer.c in_library.c
 
 LIBS = error_sanitizer_preload.so
 ############################################################################
@@ -80,9 +74,6 @@ run: ev
 		LDFLAGS_LOCAL="${LDFLAGS}" CC=${CC} $(MAKE) tests
 
 ev: hook $(LIBS)
-
-$(ESAN_INIT_OBJ): error_sanitizer.c $(LIB_OBJ)
-	$(CC) -nostdinc --sysroot=$(SYSROOT) -I$(SYSROOT)/include -c ${CFLAGS} $<
 
 coverage_compile:
 	CC="gcc" CFLAGS_LOCAL="$(CFLAGS_COVERAGE)" CFLAGS_LIB_LOCAL="$(CFLAGS_COVERAGE)" \
@@ -100,25 +91,12 @@ coverage_html:
 	gcovr -r "${ESAN_PATH}" --delete --print-summary --html --html-details -o coverage.html
 	find -type f -regex '.*\(gcno\|gcda\)$$' -delete
 
-$(ESAN_INIT_OBJ_LINKED): $(ESAN_INIT_OBJ)
-	$(LD) -nostdlib --sysroot=$(SYSROOT) -L$(SYSROOT)/lib -r -o $@ $< -lc
-
-$(ESAN_INIT_OBJ_HIDDEN): $(ESAN_INIT_OBJ_LINKED)
-	$(OBJCOPY) --wildcard --localize-symbol='*' $< $@
-
-$(ESAN_INIT_OBJ_API): $(ESAN_INIT_OBJ_HIDDEN)
-	$(OBJCOPY) --globalize-symbol=esan_always_succeed \
-		--globalize-symbol=esan_error_bitmap \
-		--globalize-symbol=esan_error_bitmap_size \
-		--globalize-symbol=parse_map \
-		--globalize-symbol=parse_map_cleanup $< $@
-
-error_sanitizer_preload.so: $(ESAN_INIT_OBJ_API) $(HOOK_OBJ) ${PRELOAD_SRC} $(LIB_OBJ)
+error_sanitizer_preload.so: $(HOOK_OBJ) ${PRELOAD_SRC}
 	$(CC) $(CFLAGS_LIB) -o $@ $^ $(LDFLAGS_LIB)
 
-clean: hook_clean test_clean lib_clean
+clean: hook_clean test_clean
 	rm -f $(LIBS) $(HOOK_OBJ) $(ESAN_INIT_OBJ) $(ESAN_INIT_OBJ_LINKED) $(ESAN_INIT_OBJ_HIDDEN) \
-		$(ESAN_INIT_OBJ_API)
+		$(ESAN_INIT_OBJ_API) $(LIB_OBJ_HIDDEN) $(LIB_OBJ_LINKED) $(LIB_OBJ_LINKED_API) $(LIB_OBJ)
 	find -type f -regex '.*\(gcno\|gcda\|html\)$$' -delete
 
 hook: ${HOOK_PATH}/hooks.o
@@ -127,15 +105,8 @@ ${HOOK_OBJ}: ${HOOK_PATH}
 	cd ${HOOK_PATH} && ESAN_PATH=${ESAN_PATH} CFLAGS_LOCAL="${CFLAGS}" \
 		LDFLAGS_LOCAL="${LDFLAGS}" CC=${CC} $(MAKE)
 
-${LIB_OBJ}: ${LIB_PATH}
-	cd ${LIB_PATH} && ESAN_PATH=${ESAN_PATH} CFLAGS_LOCAL="${CFLAGS}" \
-		LDFLAGS_LOCAL="${LDFLAGS}" CC=${CC} $(MAKE)
-
 hook_clean:
 	cd ${HOOK_PATH} && ESAN_PATH=${ESAN_PATH} $(MAKE) clean
-
-lib_clean: ${LIB_PATH}
-	cd ${LIB_PATH} && ESAN_PATH=${ESAN_PATH} $(MAKE) clean
 
 test: $(LIBS)
 	cd ${TEST_PATH} && ESAN_PATH=${ESAN_PATH} CFLAGS_LOCAL="${CFLAGS}" \

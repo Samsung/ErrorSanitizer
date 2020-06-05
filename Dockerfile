@@ -38,7 +38,6 @@ COPY ./*.c /errorsanitizer/
 COPY ./Makefile /errorsanitizer/
 COPY ./hooks /errorsanitizer/hooks/
 COPY ./include /errorsanitizer/include/
-COPY ./in_library /errorsanitizer/in_library/
 
 WORKDIR /errorsanitizer
 

@@ -43,6 +43,8 @@ static const char *proc_maps_path = "/proc/self/maps";
 static const char *library_exclusion_regex =
 	"/(l(ib(c|m|stdc\\+\\+|gcc_s)|d)|error_sanitizer_preload)(-[0-9.-]+)?\\.so";
 static long current_address_idx = -1;
+static long initial_value = -1;
+static long *library_address_idx = &initial_value;
 static char line[MAX_LINE_LENGTH];
 
 static void add_new_library(const library_address_range_s *lib,
@@ -165,6 +167,7 @@ HIDE void in_library_initialize(void)
 #endif /* DEBUG */
 	}
 	parse_file();
+	library_address_idx = &current_address_idx;
 }
 
 HIDE void in_library_destructor(void)
@@ -182,8 +185,10 @@ HIDE int in_library(const void *address)
 {
 	long library_it;
 	unsigned long addr;
+	if (library_address_idx == &initial_value)
+		return 1;
 	addr = (unsigned long)address;
-	for (library_it = 0; library_it < current_address_idx; ++library_it) {
+	for (library_it = 0; library_it < *library_address_idx; ++library_it) {
 		if (addr > lib_addr_range[library_it].start &&
 		    addr < lib_addr_range[library_it].end) {
 #ifdef DEBUG
@@ -193,6 +198,7 @@ HIDE int in_library(const void *address)
 			return 1;
 		}
 	}
+
 	log("Addr %p no in_library.", address);
 	return 0;
 }
