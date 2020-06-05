@@ -182,7 +182,8 @@ static char *read_data_from_stdio(size_t *map_data_size)
 		}
 		++stdin_it;
 		if (stdin_it >= buff_size) {
-			if (!(buff = realloc(buff, buff_size * 2))) {
+			buff_size *= 2;
+			if (!(buff = realloc(buff, buff_size))) {
 				log("Unable to reallocate memory for AFL input buffer.");
 				free(buff);
 				return NULL;
@@ -281,6 +282,7 @@ HIDE void parse_map(int argc, char **argv, const char *const *envp)
 	char *after_split_prt = 0;
 	enum ESAN_ERROR_CODE_E ret_code;
 	int bitmap_filepath_pos = -1;
+	int esan_filemap_path_from_env = 0;
 #if CP_WRONG_MAP
 	static int srand_initialized = 0;
 #endif
@@ -292,9 +294,10 @@ HIDE void parse_map(int argc, char **argv, const char *const *envp)
 	} else {
 		// read map + test data from file
 		bitmap_path = (char *)esan_getenv("AFL_MAP_FILEPATH=");
-		if (bitmap_path)
+		if (bitmap_path) {
+			esan_filemap_path_from_env = 1;
 			bitmap_path += strlen("AFL_MAP_FILEPATH=");
-		else {
+		} else {
 			bitmap_path = find_bitmap_filepath(
 				argc, argv, &bitmap_filepath_pos);
 			if (bitmap_path == NULL)
@@ -308,12 +311,12 @@ HIDE void parse_map(int argc, char **argv, const char *const *envp)
 			free(esan_error_bitmap);
 			exit_failure(
 				ESAN_INTERNAL_ERROR,
-				"Unable to read input data. bitmap: %p, size: %ld",
-				esan_error_bitmap, esan_error_bitmap_size);
+				"Unable to read input data. bitmap size: %ld",
+				esan_error_bitmap_size);
 		}
 		program_data_path = (char *)esan_getenv(
 			"ESAN_WRITE_PROGRAM_DATA_TO_MAP_FILE");
-		if (program_data_path)
+		if (program_data_path || esan_filemap_path_from_env)
 			program_data_path = bitmap_path;
 		else {
 			// change file extension from .cur_input to .esn_input

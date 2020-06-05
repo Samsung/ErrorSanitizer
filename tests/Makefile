@@ -71,7 +71,7 @@ test_openssl.elf: test_openssl.o
 
 test_empty_map.txt: test_empty_map.elf
 	touch "esan_empty.map.$<.cur_input"
-	LD_PRELOAD=${ESAN_PATH}/error_sanitizer_preload.so ./$< "esan_empty.map.$<.cur_input" 2>&1 | grep -qE '^error_sanitizer\.c \| parse_map:3(09|12) \| Unable to read input data. bitmap: 0x[0-9a-f]+, size: 0$$'
+	LD_PRELOAD=${ESAN_PATH}/error_sanitizer_preload.so ./$< "esan_empty.map.$<.cur_input" 2>&1 | grep -qE '^error_sanitizer\.c \| parse_map:3(12|15) \| Unable to read input data\. bitmap size: 0$$'
 	rm -f "esan_empty.map.$<.cur_input"
 
 %.txt: %.elf
