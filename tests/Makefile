@@ -30,16 +30,15 @@ SRC     = $(wildcard *.c)
 TESTS   = $(wildcard test_*.c)
 EXEC    = $(TESTS:.c=.elf)
 EXEC_FAIL = $(TESTS:.c=.elf.fail)
+EXEC_LINKED = $(TESTS:.c=.elf.linked)
 RESULTS = $(TESTS:.c=.txt)
-
-DEPS    = Makefile
 
 ############################################################################
 
-all: $(EXEC) $(EXEC_FAIL)
+all: $(EXEC) $(EXEC_FAIL) $(EXEC_LINKED)
 
 clean:
-	rm -f $(EXEC) $(EXEC_FAIL)
+	rm -f $(EXEC) $(EXEC_FAIL) $(EXEC_LINKED)
 	$(MAKE) clean_test_files
 
 tests: $(RESULTS)
@@ -58,10 +57,12 @@ clean_test_files:
 
 ############################################################################
 
-%.elf: %.c $(DEPS)
+%.elf: %.c
 	$(CC) -o $@ $< $(CFLAGS) $(LDFLAGS)
+%.elf.linked: %.c ${ESAN_PATH}/error_sanitizer_preload.so
+	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
 
-%.elf.fail: %.c $(DEPS)
+%.elf.fail: %.c
 # ESAN_FAIL_TEST produces test binaries that should fail, at test point
 # e.g. test_fpen should fail at fopen() call
 	$(CC) -o $@ $< $(CFLAGS) -DESAN_FAIL_TEST $(LDFLAGS)
