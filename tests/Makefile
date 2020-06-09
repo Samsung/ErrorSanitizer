@@ -32,6 +32,7 @@ EXEC    = $(TESTS:.c=.elf)
 EXEC_FAIL = $(TESTS:.c=.elf.fail)
 EXEC_LINKED = $(TESTS:.c=.elf.linked)
 RESULTS = $(TESTS:.c=.txt)
+RESULTS += test_large_map.txt
 
 ############################################################################
 
@@ -74,6 +75,13 @@ test_empty_map.txt: test_empty_map.elf
 	touch "esan_empty.map.$<.cur_input"
 	LD_PRELOAD=${ESAN_PATH}/error_sanitizer_preload.so ./$< "esan_empty.map.$<.cur_input" 2>&1 | grep -qE '^error_sanitizer\.c \| parse_map:3(12|15) \| Unable to read input data\. bitmap size: 0$$'
 	rm -f "esan_empty.map.$<.cur_input"
+
+test_large_map.txt: test_ftell.elf
+	head -c 500k /dev/zero > 500k.cur_input
+	printf 'XXXX\n' >> 500k.cur_input
+	AFL_USE_STDIO=Y LD_PRELOAD=${ESAN_PATH}/error_sanitizer_preload.so \
+		./$< < 500k.cur_input
+	rm -f 500k.cur_input
 
 %.txt: %.elf
 	cp esan_always_succeed.map "esan_always_succeed.map.$<.cur_input"
