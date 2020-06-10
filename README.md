@@ -27,11 +27,11 @@ Now let's do the same using ErrorSanitizer.
 
 1. Clone project
    ```shell
-   git clone --recurse-submodules https://github.com/Samsung/ErrorSanitizer
+   git clone https://github.com/Samsung/ErrorSanitizer.git
    ```
 2. Compile project
 
-   Compile requirements: libssl-dev (for openssl hooks) and C compiler such as GNU gcc or clang
+   Compile requirements: libssl-dev (optional for openssl hooks) and C compiler such as GNU gcc or clang
 
     ```shell
     make
@@ -101,8 +101,35 @@ This is done transparently for the tested application.
 ## Hooks
 The list of currently implemented hooks can be found in the [Hooks](./doc/Hooks.md) section.
 
+## Build flags
+Additional build flags can passed by environment variables:<br />
+  a) CFLAGS_LOCAL - sets additional CFLAGS<br />
+  b) LDFLAGS_LOCAL - sets additional LDFLAGS
+
+Build time defines:
+
+a) AFL - disable logging:
+  - on failure exit
+  - on failure injection
+  - statistics printing during exit
+  - statistics counting
+
+b) CP_WRONG_MAP - enable copying maps with wrong format to `/tmp/esan_debug%d.txt`
+where `%d` is random integer, useful only for debugging.
+
+c) DEBUG - enable logging
+
+d) ESAN_DISABLE_HOOKS_OPENSSL - disables openssl hooks, set by default.
+
+```shell
+CFLAGS_LOCAL="-DDEBUG -DCP_WRONG_MAP" make
+```
 ## AFL Integration
-1. Execute steps 1. and 2. from sample usage.
+1. Execute step 1. from sample usage.
+2. Compile project
+    ```shell
+    CFLAGS_LOCAL="-DAFL" make
+    ```
 2. Add necessary environment variables:
    ```shell
    AFL_PRELOAD=PATH_TO_ESAN/error_sanitizer_preload.so
