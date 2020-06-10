@@ -27,9 +27,7 @@ LIB_PATH = ${ESAN_PATH}/in_library
 SYSROOT = ${LIB_PATH}/sysroot
 
 CC ?= clang
-OBJCOPY	:= $(shell which objcopy)
 
-INCLUDE_FLAGS = -I${ESAN_PATH}/include
 # Additional defines:
 # -DAFL - disable logging:
 #    on failure exit
@@ -46,14 +44,10 @@ INCLUDE_FLAGS = -I${ESAN_PATH}/include
 # -DESAN_DISABLE_HOOKS_OPENSSL - disables openssl hooks
 
 
-# Shared CFLAGS between library and other components
-CFLAGS_SHARED = ${INCLUDE_FLAGS} -fPIC -Wall -Wextra -Werror -std=gnu89 -DESAN_DISABLE_HOOKS_OPENSSL
-# CFLAGS for other components
-CFLAGS = $(CFLAGS_LOCAL) ${CFLAGS_SHARED}
+CFLAGS = -I${ESAN_PATH}/include
+CFLAGS += -fPIC -Wall -Wextra -Werror -std=gnu89 -DESAN_DISABLE_HOOKS_OPENSSL
+CFLAGS += $(CFLAGS_LOCAL)
 LDFLAGS = $(LDFLAGS_LOCAL)
-# CFLAGS for library
-CFLAGS_LIB = $(CFLAGS_LIB_LOCAL) ${CFLAGS_SHARED}
-LDFLAGS_LIB = $(LDFLAGS_LIB_LOCAL) -shared -ldl
 
 HOOK_OBJ = ${HOOK_PATH}/hooks.o
 CFLAGS_COVERAGE = -fprofile-arcs -ftest-coverage -ggdb
@@ -61,7 +55,7 @@ LDFLAGS_COVERAGE = -lgcov --coverage
 
 PRELOAD_SRC     = error_sanitizer_preload.c esan_stats.c esan_fail.c error_sanitizer.c in_library.c esan_mutex.c
 
-LIBS = error_sanitizer_preload.so
+LIB = error_sanitizer_preload.so
 ############################################################################
 
 all: ev
@@ -73,11 +67,11 @@ run: ev
 	cd $(TEST_PATH) && ESAN_PATH=$(ESAN_PATH) CFLAGS_LOCAL="${CFLAGS}" \
 		LDFLAGS_LOCAL="${LDFLAGS}" CC=${CC} $(MAKE) tests
 
-ev: hook $(LIBS)
+ev: hook $(LIB)
 
 coverage_compile:
-	CC="gcc" CFLAGS_LOCAL="$(CFLAGS_COVERAGE)" CFLAGS_LIB_LOCAL="$(CFLAGS_COVERAGE)" \
-		LDFLAGS_LOCAL="$(LDFLAGS_COVERAGE)" LDFLAGS_LIB_LOCAL="$(LDFLAGS_COVERAGE)" \
+	CC="gcc" CFLAGS_LOCAL="$(CFLAGS_COVERAGE)" \
+		LDFLAGS_LOCAL="$(LDFLAGS_COVERAGE)" \
 		$(MAKE) rebuild
 
 coverage:
@@ -92,11 +86,10 @@ coverage_html:
 	find -type f -regex '.*\(gcno\|gcda\)$$' -delete
 
 error_sanitizer_preload.so: $(HOOK_OBJ) ${PRELOAD_SRC}
-	$(CC) $(CFLAGS_LIB) -o $@ $^ $(LDFLAGS_LIB)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) -shared -ldl
 
 clean: hook_clean test_clean
-	rm -f $(LIBS) $(HOOK_OBJ) $(ESAN_INIT_OBJ) $(ESAN_INIT_OBJ_LINKED) $(ESAN_INIT_OBJ_HIDDEN) \
-		$(ESAN_INIT_OBJ_API) $(LIB_OBJ_HIDDEN) $(LIB_OBJ_LINKED) $(LIB_OBJ_LINKED_API) $(LIB_OBJ)
+	rm -f $(LIB)
 	find -type f -regex '.*\(gcno\|gcda\|html\)$$' -delete
 
 hook: ${HOOK_PATH}/hooks.o
