@@ -46,18 +46,13 @@ static {func_return_value} real_{func_name}{func_full_params}
     if (NULL != {func_name}_func_ptr)
         return (*{func_name}_func_ptr){func_name_params};
 
-    ESAN_ERROR("Error in dlsym - in '{func_name}' wrapper\\n");
+    log("Error in dlsym - in '{func_name}' wrapper\\n");
     exit(-1);
 }}
 
 {func_return_value} {func_name}{func_full_params}
 {{
-    ESAN_DEBUG("%s %s:%d\\n", __FILE__, __FUNCTION__, __LINE__);
-    obj_stats[ESAN_{func_name_upper}].esan_nr_executions += 1;
-    if (esan_should_I_fail()) {{
-		fail_common();
-        esan_fail_message("{func_name}");
-        obj_stats[ESAN_{func_name_upper}].esan_nr_failed_executions += 1;
+    if (esan_should_I_fail(__builtin_return_address(0), ESAN_{func_name_upper})) {{
         return esan_on_fail_{func_name}{func_name_params};
     }} else {{
         return real_{func_name}{func_name_params};
