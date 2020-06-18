@@ -26,6 +26,7 @@ typedef struct stats {
 } stats;
 
 static struct stats obj_stats[ESAN_NR_FUNCTIONS];
+static enum ESAN_FUNCTIONS_E last_fallen = ESAN_NR_FUNCTIONS;
 
 static const char *const ESAN_FUNCTION_NAMES[ESAN_NR_FUNCTIONS] = {
 	"calloc",
@@ -55,6 +56,8 @@ HIDE void add_execution(enum ESAN_FUNCTIONS_E fun_name,
 {
 	obj_stats[fun_name].esan_nr_executions++;
 	obj_stats[fun_name].esan_nr_failed_executions += fail_status;
+	if (fail_status)
+		last_fallen = fun_name;
 }
 
 void esan_print_stats(void)
@@ -83,4 +86,10 @@ void esan_print_stats(void)
 	fprintf(stderr, " %-18s | %8ld | %15ld\n", "TOTAL ",
 		esan_all_executions, esan_all_failed_executions);
 	fprintf(stderr, "--------------------|----------|-----------------\n");
+	if (ESAN_NR_FUNCTIONS != last_fallen) {
+		fprintf(stderr, "Last fallen: %s\n",
+			ESAN_FUNCTION_NAMES[last_fallen]);
+		fprintf(stderr,
+			"--------------------|----------|-----------------\n");
+	}
 }
