@@ -16,7 +16,9 @@
     Author: Ernest Borowski <e.borowski@samsung.com>
     Author: Mateusz Nosek <m.nosek@samsung.com>
 */
+#include "esan_mutex.h"
 #include "esan_visibility.h"
+#include "log.h"
 #include "stats.h"
 #include <stdio.h>
 
@@ -62,9 +64,16 @@ HIDE void add_execution(enum ESAN_FUNCTIONS_E fun_name,
 
 void esan_print_stats(void)
 {
+	static unsigned execute_once = 0;
 	unsigned long esan_all_failed_executions = 0, esan_all_executions = 0;
 	unsigned i;
 
+	esan_mutex_lock();
+	if (execute_once++) {
+		log("esan_print_stats called %u times.", execute_once);
+		esan_mutex_unlock();
+		return;
+	}
 	fprintf(stderr, "\nError Sanitizer stats\n");
 	fprintf(stderr, "--------------------|----------|-----------------\n");
 	fprintf(stderr, " %-19s|%-10s|%-17s\n", "Function ", " nr execs ",
@@ -92,4 +101,5 @@ void esan_print_stats(void)
 		fprintf(stderr,
 			"--------------------|----------|-----------------\n");
 	}
+	esan_mutex_unlock();
 }

@@ -53,7 +53,8 @@ HOOK_OBJ = ${HOOK_PATH}/hooks.o
 CFLAGS_COVERAGE = -fprofile-arcs -ftest-coverage -ggdb
 LDFLAGS_COVERAGE = -lgcov --coverage
 
-PRELOAD_SRC     = error_sanitizer_preload.c esan_stats.c esan_fail.c error_sanitizer.c in_library.c esan_mutex.c
+PRELOAD_SRC = error_sanitizer_preload.c esan_stats.c esan_fail.c error_sanitizer.c in_library.c \
+			esan_mutex.c esan_signal.c
 
 LIB = error_sanitizer_preload.so
 ############################################################################

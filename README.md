@@ -59,6 +59,8 @@ c) DEBUG - enable logging
 
 d) ESAN_DISABLE_HOOKS_OPENSSL - disables openssl hooks, set by default.
 
+e) ESAN_NO_SIGNALS - disable signal handlers use by ESAN.
+
 ```shell
 CFLAGS_LOCAL="-DDEBUG -DCP_WRONG_MAP" make
 ```
