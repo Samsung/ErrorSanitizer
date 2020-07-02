@@ -2,3 +2,5 @@
 *.o
 *.so
 *.elf
+*.elf.fail
+*.elf.linked
