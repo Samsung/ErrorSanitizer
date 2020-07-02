@@ -16,6 +16,52 @@ It is also useful in unit testing for checking rare corner cases without writing
 3. Continue execution to tested binary main() function.
 4. Inject failures to standard library calls based on provided map.
 
+## Compilation
+Compile requirements:
+  - C compiler which is compatible with C GNU89 dialect such as GNU gcc or clang
+  - GNU make
+  - libssl-dev (optional for openssl hooks)
+  - diffutils - (optional it is required to execute tests)
+
+At the moment project supports only GNU/Linux operating system.
+Feel free to open issue if you want to test it on different platform.
+
+To compile project simply execute:
+
+```shell
+make
+```
+To compile tests:
+```shell
+make test
+```
+And then execute them:
+```shell
+make run
+```
+### Build flags
+Additional build flags can passed by environment variables:<br />
+  a) CFLAGS_LOCAL - sets additional CFLAGS<br />
+  b) LDFLAGS_LOCAL - sets additional LDFLAGS
+
+Build time defines:
+
+a) AFL - disable logging:
+  - on failure exit
+  - on failure injection
+  - statistics printing during exit
+  - statistics counting
+
+b) CP_WRONG_MAP - enable copying maps with wrong format to `/tmp/esan_debug%d.txt`
+where `%d` is random integer, useful only for debugging.
+
+c) DEBUG - enable logging
+
+d) ESAN_DISABLE_HOOKS_OPENSSL - disables openssl hooks, set by default.
+
+```shell
+CFLAGS_LOCAL="-DDEBUG -DCP_WRONG_MAP" make
+```
 ## Sample usage
 
 In this sample we want to execute `cat` to read contents of `/etc/passwd` file.
@@ -31,11 +77,7 @@ Now let's do the same using ErrorSanitizer.
    ```
 2. Compile project
 
-   Compile requirements: libssl-dev (optional for openssl hooks) and C compiler such as GNU gcc or clang
-
-    ```shell
-    make
-    ```
+   Please follow [Compilation](#compilation) section.
 
 3. Execute sample binary:
 
@@ -101,29 +143,6 @@ This is done transparently for the tested application.
 ## Hooks
 The list of currently implemented hooks can be found in the [Hooks](./doc/Hooks.md) section.
 
-## Build flags
-Additional build flags can passed by environment variables:<br />
-  a) CFLAGS_LOCAL - sets additional CFLAGS<br />
-  b) LDFLAGS_LOCAL - sets additional LDFLAGS
-
-Build time defines:
-
-a) AFL - disable logging:
-  - on failure exit
-  - on failure injection
-  - statistics printing during exit
-  - statistics counting
-
-b) CP_WRONG_MAP - enable copying maps with wrong format to `/tmp/esan_debug%d.txt`
-where `%d` is random integer, useful only for debugging.
-
-c) DEBUG - enable logging
-
-d) ESAN_DISABLE_HOOKS_OPENSSL - disables openssl hooks, set by default.
-
-```shell
-CFLAGS_LOCAL="-DDEBUG -DCP_WRONG_MAP" make
-```
 ## AFL Integration
 1. Execute step 1. from sample usage.
 2. Compile project
