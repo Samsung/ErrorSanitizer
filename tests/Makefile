@@ -33,6 +33,10 @@ EXEC_FAIL = $(TESTS:.c=.elf.fail)
 EXEC_LINKED = $(TESTS:.c=.elf.linked)
 RESULTS = $(TESTS:.c=.txt)
 RESULTS += test_large_map.txt
+RESULTS += test_access.fail.txt test_calloc.fail.txt test_chmod.fail.txt test_faccessat.fail.txt
+RESULTS += test_fchmod.fail.txt test_fclose.fail.txt test_fopen.fail.txt test_fputs.fail.txt
+RESULTS += test_ftell.fail.txt test_ftello.fail.txt test_malloc.fail.txt test_realloc.fail.txt
+RESULTS += test_rewind.fail.txt test_strdup.fail.txt test_strndup.fail.txt
 
 ############################################################################
 
@@ -95,7 +99,14 @@ test_large_map.txt: test_ftell.elf
 	LD_PRELOAD=${ESAN_PATH}/error_sanitizer_preload.so ./$< "esan_always_succeed.map.$<.cur_input"
 	rm -f "esan_always_succeed.map.$<.cur_input"
 
-%fail.txt: esan_fail%.map
-	cp "esan_fail%.map" "esan_fail%.map.cur_input"
-	LD_PRELOAD=${ESAN_PATH}/error_sanitizer_preload.so ./$< "esan_fail%.map.cur_input"
-	rm -f "esan_fail%.map.cur_input"
+test_rewind.fail.txt: esan_fail.test_rewind.map test_rewind.elf.fail
+	cp "$<" "$<.cur_input"
+	LD_PRELOAD=${ESAN_PATH}/error_sanitizer_preload.so ./$(word 2,$^) "$<.cur_input" 2>&1 \
+	| grep -vE "^hooks_file\.c | rewind:177 | rewind is obsolete function - see SEI CERT C Coding Standard MSC24-C for detailsgrep" - \
+	|grep -vE '^(in_library|error_sanitizer)\.c' - | diff test_rewind_neg_results.txt -
+	rm -f "$<.cur_input"
+
+%.fail.txt: esan_fail.%.map %.elf.fail
+	cp "$<" "$<.cur_input"
+	LD_PRELOAD=${ESAN_PATH}/error_sanitizer_preload.so ./$(word 2,$^) "$<.cur_input"
+	rm -f "$<.cur_input"

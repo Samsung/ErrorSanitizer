@@ -27,7 +27,7 @@ int main()
 	int fd;
 	FILE *file;
 	static const char path[] = "./fchmod.test";
-	file = fopen(path, "a");
+	file = fopen(path, "w");
 	if (!file)
 		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
 			     "Creating temporary file failed!");
@@ -39,16 +39,16 @@ int main()
 			     "Opening temporary file failed!");
 	fd = fileno(file);
 
-	if (0 != fchmod(fd, ESAN_FULL_ACCESS_ALL)) {
-		fclose(file);
-		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
-			     "fchmod 0777 failed!");
-	}
-
 	if (0 != fchmod(fd, 0)) {
 		fclose(file);
 		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
 			     "fchmod 0000 failed!");
+	}
+
+	if (0 != fchmod(fd, ESAN_FULL_ACCESS_ALL)) {
+		fclose(file);
+		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
+			     "fchmod 0777 failed!");
 	}
 
 	if (0 != fchmod(fd, ESAN_RW_ACCESS_OWNER)) {

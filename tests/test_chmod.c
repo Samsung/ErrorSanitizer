@@ -32,12 +32,12 @@ int main()
 			     "Creating temporary file failed!");
 	fclose(file);
 	/* race condition here... I know */
-	if (0 != chmod(path, ESAN_FULL_ACCESS_ALL))
-		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
-			     "chmod 0777 failed!");
 	if (0 != chmod(path, 0))
 		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
 			     "chmod 0000 failed!");
+	if (0 != chmod(path, ESAN_FULL_ACCESS_ALL))
+		exit_failure(ESAN_TESTS_LIBRARY_FUNCTION_ERROR,
+			     "chmod 0777 failed!");
 	if (0 != chmod(path, ESAN_RW_ACCESS_OWNER)) {
 #ifdef ESAN_FAIL_TEST
 		log("chmod successfully failed.");

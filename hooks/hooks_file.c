@@ -175,7 +175,7 @@ void rewind(FILE *stream)
 {
 	if (esan_should_I_fail(__builtin_return_address(0), ESAN_REWIND)) {
 		log("%s is obsolete function - see SEI CERT C Coding Standard "
-		    "MSC24-C for details!\n",
+		    "MSC24-C for details!",
 		    "rewind");
 		exit(-3);
 	} else {
