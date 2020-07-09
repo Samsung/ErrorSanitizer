@@ -45,8 +45,7 @@ while IFS= read -r -d '' f; do
 	fi
 	WHILE_EXECUTED=1
 done < <(find . -type f -print0 | \
-		grep -E --null-data -v '^\./(\.[^/]|in_library/musl)' |\
-		grep -E --null-data '(/Makefile|\.([ch]|map|sh|md))$')
+		grep -E --null-data '(/Makefile|\.([ch]|sh|md))$')
 
 if [ "$WHILE_EXECUTED" != "1" ]; then
 	echo "Unable to execute git ls-files"
