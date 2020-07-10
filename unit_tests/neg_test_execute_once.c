@@ -15,11 +15,14 @@
 
     Author: Mateusz Nosek <m.nosek@samsung.com>
 */
-#include "esan_wrapper.h"
-#include <signal.h>
+extern void lib_init(void);
+extern void lib_exit(void);
+extern void esan_print_stats(void);
+
 int main()
 {
-	raise(SIGILL);
-	exit_failure(ESAN_INTERNAL_ERROR,
-		     "SIGILL raised, I should not get here");
+	lib_exit();
+	lib_init();
+	esan_print_stats();
+	return 0;
 }

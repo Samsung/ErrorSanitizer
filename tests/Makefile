@@ -75,18 +75,6 @@ clean_test_files:
 test_openssl.elf: test_openssl.o
 	$(CC) -o $@ $^ $(LDFLAGS) -lssl -lcrypto
 
-test_empty_map.txt: test_empty_map.elf
-	touch "esan_empty.map.$<.cur_input"
-	LD_PRELOAD=${ESAN_PATH}/error_sanitizer_preload.so ./$< "esan_empty.map.$<.cur_input" 2>&1 | grep -qE '^error_sanitizer\.c \| parse_map:3(12|15) \| Unable to read input data\. bitmap size: 0$$'
-	rm -f "esan_empty.map.$<.cur_input"
-
-test_SIG%.txt: test_SIG%.elf
-	cp esan_always_succeed.map "esan_always_succeed.map.$<.cur_input"
-	LD_PRELOAD=${ESAN_PATH}/error_sanitizer_preload.so ./$< "esan_always_succeed.map.$<.cur_input" 2>&1 \
-	| grep -vE '^(in_library|error_sanitizer)\.c' - | diff SIGtest_results.txt -
-	rm -f "esan_always_succeed.map.$<.cur_input"
-	rm -f "esan_always_succeed.map.$<.esn_input"
-
 test_large_map.txt: test_ftell.elf
 	head -c 500k /dev/zero > 500k.cur_input
 	printf 'XXXX\n' >> 500k.cur_input

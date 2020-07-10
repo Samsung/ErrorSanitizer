@@ -15,8 +15,9 @@
 
     Author: Mateusz Nosek <m.nosek@samsung.com>
 */
-#include "esan_wrapper.h"
+#include "log.h"
 #include <signal.h>
+#include <stdlib.h>
 int main()
 {
 	raise(SIGSEGV);

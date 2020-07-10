@@ -22,6 +22,7 @@ ifeq (${ESAN_PATH},)
 endif
 
 TEST_PATH = ${ESAN_PATH}/tests
+UNIT_TEST_PATH = ${ESAN_PATH}/unit_tests
 HOOK_PATH = ${ESAN_PATH}/hooks
 LIB_PATH = ${ESAN_PATH}/in_library
 SYSROOT = ${LIB_PATH}/sysroot
@@ -67,29 +68,31 @@ rebuild: clean
 run: ev
 	cd $(TEST_PATH) && ESAN_PATH=$(ESAN_PATH) CFLAGS_LOCAL="${CFLAGS}" \
 		LDFLAGS_LOCAL="${LDFLAGS}" CC=${CC} $(MAKE) tests
+	cd $(UNIT_TEST_PATH) && ESAN_PATH=$(ESAN_PATH) CFLAGS_LOCAL="${CFLAGS}" \
+		LDFLAGS_LOCAL="${LDFLAGS}" CC=${CC} $(MAKE)
 
 ev: hook $(LIB)
 
 coverage_compile:
-	CC="gcc" CFLAGS_LOCAL="$(CFLAGS_COVERAGE)" \
-		LDFLAGS_LOCAL="$(LDFLAGS_COVERAGE)" \
+	CC="gcc" CFLAGS_LOCAL="$(CFLAGS_COVERAGE) $(CFLAGS_LOCAL)" \
+		LDFLAGS_LOCAL="$(LDFLAGS_COVERAGE) $(LDFLAGS_LOCAL)" \
 		$(MAKE) rebuild
 
 coverage:
-	$(MAKE) coverage_compile
-	$(MAKE) run
+	CFLAGS_LOCAL="$(CFLAGS_LOCAL)" LDFLAGS_LOCAL="$(LDFLAGS_LOCAL)" $(MAKE) coverage_compile
+	CFLAGS_LOCAL="$(CFLAGS_LOCAL)" LDFLAGS_LOCAL="$(LDFLAGS_LOCAL)" $(MAKE) run
 	gcovr -r "${ESAN_PATH}" --delete --print-summary
 	find -type f -regex '.*\(gcno\|gcda\)$$' -delete
 coverage_html:
-	$(MAKE) coverage_compile
-	$(MAKE) run
+	CFLAGS_LOCAL="$(CFLAGS_LOCAL)" LDFLAGS_LOCAL="$(LDFLAGS_LOCAL)" $(MAKE) coverage_compile
+	CFLAGS_LOCAL="$(CFLAGS_LOCAL)" LDFLAGS_LOCAL="$(LDFLAGS_LOCAL)" $(MAKE) run
 	gcovr -r "${ESAN_PATH}" --delete --print-summary --html --html-details -o coverage.html
 	find -type f -regex '.*\(gcno\|gcda\)$$' -delete
 
 error_sanitizer_preload.so: $(HOOK_OBJ) ${PRELOAD_SRC}
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) -shared -ldl
 
-clean: hook_clean test_clean
+clean: hook_clean test_clean unit_test_clean
 	rm -f $(LIB)
 	find -type f -regex '.*\(gcno\|gcda\|html\)$$' -delete
 
@@ -107,3 +110,6 @@ test: $(LIBS)
 		LDFLAGS_LOCAL="${LDFLAGS}" CC=${CC} $(MAKE)
 test_clean:
 	cd ${TEST_PATH} && ESAN_PATH=${ESAN_PATH} $(MAKE) clean
+
+unit_test_clean:
+	cd ${UNIT_TEST_PATH} && ESAN_PATH=${ESAN_PATH} $(MAKE) clean
