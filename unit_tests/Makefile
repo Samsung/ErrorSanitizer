@@ -31,7 +31,7 @@ ESAN_LIB := ${ESAN_PATH}/error_sanitizer_preload.so
 
 TESTS   = $(wildcard test_*.c) $(wildcard neg_test_*.c)
 EXEC    = $(TESTS:.c=.elf)
-RESULTS = $(TESTS:.c=.txt)
+RESULTS = $(TESTS:.c=.txt) neg_test_sigaction.txt
 
 ############################################################################
 
@@ -92,3 +92,16 @@ neg_test_execute_once.txt: neg_test_execute_once.elf  ${ESAN_LIB}
 	LD_PRELOAD=${ESAN_LIB} ./$< "$<.cur_input"
 	rm -f "$<.cur_input"
 endif
+
+sigaction_test_hook.so: sigaction_test_hook.c
+	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS) -shared
+
+neg_test_sigaction.txt: test_empty_map.elf sigaction_test_hook.so
+	cp esan_always_succeed.map "$<.cur_input"
+	SIGACTION_FAIL=0 LD_PRELOAD=./$(word 2, $^):${ESAN_PATH}/error_sanitizer_preload.so ./$< "$<.cur_input" 2>&1 \
+	| grep -x "esan_signal.c | esan_signal_initialize:56 | Unable to set signal handlers!"
+	SIGACTION_FAIL=1 LD_PRELOAD=./$(word 2, $^):${ESAN_PATH}/error_sanitizer_preload.so ./$< "$<.cur_input" 2>&1 \
+	| grep -x "esan_signal.c | esan_signal_initialize:56 | Unable to set signal handlers!"
+	SIGACTION_FAIL=2 LD_PRELOAD=./$(word 2, $^):${ESAN_PATH}/error_sanitizer_preload.so ./$< "$<.cur_input" 2>&1 \
+	| grep -x "esan_signal.c | esan_signal_destructor:67 | Unable to restore signal handlers!"
+	rm -f "$<.cur_input"
