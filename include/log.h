@@ -30,9 +30,22 @@ enum ESAN_ERROR_CODE_E {
 	ESAN_DLSYM_ERROR = 4
 };
 
+#ifdef ESAN_COVERAGE
+#define GCOV_CUSTOM_FLUSH                \
+	do {                             \
+		void __gcov_flush(void); \
+		__gcov_flush();          \
+	} while (0)
+#else
+#define GCOV_CUSTOM_FLUSH \
+	do {              \
+	} while (0)
+#endif
+
 #ifdef AFL
 #define exit_failure(err_code, message, args...) \
 	do {                                     \
+		GCOV_CUSTOM_FLUSH;               \
 		exit(err_code);                  \
 	} while (0)
 #else
@@ -43,6 +56,7 @@ enum ESAN_ERROR_CODE_E {
 		fprintf(stderr, message, ##args);                        \
 		fprintf(stderr, "\n");                                   \
 		fflush(stderr);                                          \
+		GCOV_CUSTOM_FLUSH;                                       \
 		exit(err_code);                                          \
 	} while (0)
 #endif /* AFL */

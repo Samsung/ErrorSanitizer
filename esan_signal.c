@@ -36,6 +36,7 @@ static void handler(int sig, siginfo_t *info, void *data)
 	if (0 != sigaction(sig, &old_signals[sig], NULL))
 		exit_failure(ESAN_LIBRARY_FUNCTION_ERROR,
 			     "Restoring signal handler failed!");
+	GCOV_CUSTOM_FLUSH;
 	raise(sig);
 }
 

@@ -51,7 +51,7 @@ CFLAGS += $(CFLAGS_LOCAL)
 LDFLAGS = $(LDFLAGS_LOCAL)
 
 HOOK_OBJ = ${HOOK_PATH}/hooks.o
-CFLAGS_COVERAGE = -fprofile-arcs -ftest-coverage -ggdb
+CFLAGS_COVERAGE = -fprofile-arcs -ftest-coverage -ggdb -DESAN_COVERAGE
 LDFLAGS_COVERAGE = -lgcov --coverage
 
 PRELOAD_SRC = error_sanitizer_preload.c esan_stats.c esan_fail.c error_sanitizer.c in_library.c \
