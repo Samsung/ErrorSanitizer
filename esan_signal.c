@@ -42,13 +42,14 @@ static void handler(int sig, siginfo_t *info, void *data)
 HIDE void esan_signal_initialize(void)
 {
 	struct sigaction info;
-	int ret = 0;
+	int ret;
 
 	info.sa_sigaction = handler;
 	info.sa_flags = SA_SIGINFO;
 
-	ret = ret || sigaction(SIGSEGV, &info, &old_signals[SIGSEGV]);
-	ret = ret || sigaction(SIGILL, &info, &old_signals[SIGILL]);
+	ret = sigaction(SIGSEGV, &info, &old_signals[SIGSEGV]);
+	if (0 == ret)
+		ret = sigaction(SIGILL, &info, &old_signals[SIGILL]);
 	if (0 != ret)
 		exit_failure(ESAN_LIBRARY_FUNCTION_ERROR,
 			     "Unable to set signal handlers!");
@@ -56,9 +57,10 @@ HIDE void esan_signal_initialize(void)
 
 HIDE void esan_signal_destructor(void)
 {
-	int ret = 0;
-	ret = ret || sigaction(SIGSEGV, &old_signals[SIGSEGV], NULL);
-	ret = ret || sigaction(SIGILL, &old_signals[SIGILL], NULL);
+	int ret;
+	ret = sigaction(SIGSEGV, &old_signals[SIGSEGV], NULL);
+	if (0 == ret)
+		ret = sigaction(SIGILL, &old_signals[SIGILL], NULL);
 	if (0 != ret)
 		exit_failure(ESAN_LIBRARY_FUNCTION_ERROR,
 			     "Unable to restore signal handlers!");
