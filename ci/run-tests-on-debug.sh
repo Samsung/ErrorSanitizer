@@ -15,6 +15,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 #
 # Author: Ernest Borowski <e.borowski@samsung.com>
+# Author: Mateusz Nosek <m.nosek@samsung.com>
 #
 set -o errexit
 trap 'echo "Aborting due to errexit on line $LINENO. Exit code: $?" >&2' ERR
@@ -34,4 +35,4 @@ cd "$SCRIPT_DIR/../" #go to main repository folder
 
 make clean
 CFLAGS_LOCAL="-O0 -ggdb -DDEBUG" make
-make run
+CFLAGS_LOCAL="-DDEBUG" make run

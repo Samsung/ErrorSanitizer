@@ -82,6 +82,16 @@ test_large_map.txt: test_ftell.elf
 		./$< < 500k.cur_input
 	rm -f 500k.cur_input
 
+ifneq (,$(findstring -DDEBUG,$(CFLAGS)))
+test_fclose_stderr.txt: test_fclose_stderr.elf stderr_fclose_results_debug.txt
+else
+test_fclose_stderr.txt: test_fclose_stderr.elf stderr_fclose_results.txt
+endif
+	cp esan_always_succeed.map "$<.cur_input"
+	LD_PRELOAD=${ESAN_PATH}/error_sanitizer_preload.so ./$< "$<.cur_input" 2>&1 \
+	| grep -vE '^(in_library|error_sanitizer)\.c' - | diff "$(word 2,$^)" -
+	rm -f "$<.cur_input"
+
 %.txt: %.elf
 	cp esan_always_succeed.map "esan_always_succeed.map.$<.cur_input"
 	LD_PRELOAD=${ESAN_PATH}/error_sanitizer_preload.so ./$< "esan_always_succeed.map.$<.cur_input"
