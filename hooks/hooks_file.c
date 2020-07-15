@@ -31,8 +31,7 @@ static FILE *real_fopen(const char *filename, const char *mode)
 	if (NULL != fopen_func_ptr)
 		return (*fopen_func_ptr)(filename, mode);
 
-	log("Error in dlsym - in 'fopen' wrapper\n");
-	exit(-1);
+	exit_failure(ESAN_DLSYM_ERROR, "Error in dlsym - in 'fopen' wrapper\n");
 }
 
 // parameter names starting with __ are reserved for standard library
@@ -61,8 +60,8 @@ static off_t real_ftello(FILE *stream)
 	if (NULL != ftello_func_ptr)
 		return (*ftello_func_ptr)(stream);
 
-	log("Error in dlsym - in 'ftello' wrapper\n");
-	exit(-1);
+	exit_failure(ESAN_DLSYM_ERROR,
+		     "Error in dlsym - in 'ftello' wrapper\n");
 }
 
 // parameter names starting with __ are reserved for standard library
@@ -91,8 +90,7 @@ static long real_ftell(FILE *stream)
 	if (NULL != ftell_func_ptr)
 		return (*ftell_func_ptr)(stream);
 
-	log("Error in dlsym - in 'ftell' wrapper\n");
-	exit(-1);
+	exit_failure(ESAN_DLSYM_ERROR, "Error in dlsym - in 'ftell' wrapper\n");
 }
 
 // parameter names starting with __ are reserved for standard library
@@ -127,8 +125,8 @@ static int real_fclose(FILE *stream)
 	if (NULL != fclose_func_ptr)
 		return (*fclose_func_ptr)(stream);
 
-	log("Error in dlsym - in 'fclose' wrapper\n");
-	exit(-1);
+	exit_failure(ESAN_DLSYM_ERROR,
+		     "Error in dlsym - in 'fclose' wrapper\n");
 }
 
 // parameter names starting with __ are reserved for standard library
@@ -163,10 +161,9 @@ static void real_rewind(FILE *stream)
 		rewind_func_ptr = (rewind_func_t)dlsym(RTLD_NEXT, "rewind");
 	if (NULL != rewind_func_ptr)
 		(*rewind_func_ptr)(stream);
-	else {
-		log("Error in dlsym - in 'rewind' wrapper\n");
-		exit(-1);
-	}
+	else
+		exit_failure(ESAN_DLSYM_ERROR,
+			     "Error in dlsym - in 'rewind' wrapper\n");
 }
 
 // parameter names starting with __ are reserved for standard library
@@ -197,8 +194,7 @@ static int real_fputs(const char *str, FILE *stream)
 	if (NULL != fputs_func_ptr)
 		return (*fputs_func_ptr)(str, stream);
 
-	log("Error in dlsym - in 'fputs' wrapper\n");
-	exit(-1);
+	exit_failure(ESAN_DLSYM_ERROR, "Error in dlsym - in 'fputs' wrapper\n");
 }
 
 // parameter names starting with __ are reserved for standard library

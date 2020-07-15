@@ -64,8 +64,8 @@ static void *real_malloc(size_t size)
 	if (NULL != malloc_func_ptr)
 		return (*malloc_func_ptr)(size);
 
-	log("Error in dlsym - in 'malloc' wrapper\n");
-	exit(-1);
+	exit_failure(ESAN_DLSYM_ERROR,
+		     "Error in dlsym - in 'malloc' wrapper\n");
 }
 
 // parameter names starting with __ are reserved for standard library
@@ -94,8 +94,8 @@ static void *real_realloc(void *ptr, size_t new_size)
 	if (NULL != realloc_func_ptr)
 		return (*realloc_func_ptr)(ptr, new_size);
 
-	log("Error in dlsym - in 'realloc' wrapper\n");
-	exit(-1);
+	exit_failure(ESAN_DLSYM_ERROR,
+		     "Error in dlsym - in 'realloc' wrapper\n");
 }
 
 // parameter names starting with __ are reserved for standard library

@@ -30,8 +30,7 @@ static int real_chmod(const char *path, mode_t mode)
 	if (NULL != chmod_func_ptr)
 		return (*chmod_func_ptr)(path, mode);
 
-	log("Error in dlsym - in 'chmod' wrapper\n");
-	exit(-1);
+	exit_failure(ESAN_DLSYM_ERROR, "Error in dlsym - in 'chmod' wrapper\n");
 }
 
 // parameter names starting with __ are reserved for standard library
@@ -60,8 +59,8 @@ static int real_fchmod(int fd, mode_t mode)
 	if (NULL != fchmod_func_ptr)
 		return (*fchmod_func_ptr)(fd, mode);
 
-	log("Error in dlsym - in 'fchmod' wrapper\n");
-	exit(-1);
+	exit_failure(ESAN_DLSYM_ERROR,
+		     "Error in dlsym - in 'fchmod' wrapper\n");
 }
 
 // parameter names starting with __ are reserved for standard library

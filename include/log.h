@@ -14,6 +14,7 @@
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
     Author: Ernest Borowski <e.borowski@samsung.com>
+    Author: Mateusz Nosek <m.nosek@samsung.com>
 */
 #ifndef ESAN_LOG_H
 #define ESAN_LOG_H
@@ -24,7 +25,8 @@ enum ESAN_ERROR_CODE_E {
 	ESAN_SUCCESS = 0,
 	ESAN_INTERNAL_ERROR = 1,
 	ESAN_LIBRARY_FUNCTION_ERROR = 2,
-	ESAN_INVALID_ARGUMENT = 3
+	ESAN_INVALID_ARGUMENT = 3,
+	ESAN_DLSYM_ERROR = 4
 };
 
 #ifdef AFL

@@ -30,8 +30,8 @@ static int real_access(const char *pathname, int mode)
 	if (NULL != access_func_ptr)
 		return (*access_func_ptr)(pathname, mode);
 
-	log("Error in dlsym - in 'access' wrapper\n");
-	exit(-1);
+	exit_failure(ESAN_DLSYM_ERROR,
+		     "Error in dlsym - in 'access' wrapper\n");
 }
 
 // parameter names starting with __ are reserved for standard library
@@ -62,8 +62,8 @@ static int real_faccessat(int dirfd, const char *pathname, int mode, int flags)
 	if (NULL != faccessat_func_ptr)
 		return (*faccessat_func_ptr)(dirfd, pathname, mode, flags);
 
-	log("Error in dlsym - in 'faccessat' wrapper\n");
-	exit(-1);
+	exit_failure(ESAN_DLSYM_ERROR,
+		     "Error in dlsym - in 'faccessat' wrapper\n");
 }
 
 // parameter names starting with __ are reserved for standard library

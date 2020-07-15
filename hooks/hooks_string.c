@@ -33,8 +33,8 @@ static char *real_strdup(const char *s)
 	if (NULL != strdup_func_ptr)
 		return (*strdup_func_ptr)(s);
 
-	log("Error in dlsym - in 'strdup' wrapper\n");
-	exit(-1);
+	exit_failure(ESAN_DLSYM_ERROR,
+		     "Error in dlsym - in 'strdup' wrapper\n");
 }
 
 // parameter names starting with __ are reserved for standard library
@@ -63,8 +63,8 @@ static char *real_strndup(const char *s, size_t n)
 	if (NULL != strndup_func_ptr)
 		return (*strndup_func_ptr)(s, n);
 
-	log("Error in dlsym - in 'strndup' wrapper\n");
-	exit(-1);
+	exit_failure(ESAN_DLSYM_ERROR,
+		     "Error in dlsym - in 'strndup' wrapper\n");
 }
 
 // parameter names starting with __ are reserved for standard library

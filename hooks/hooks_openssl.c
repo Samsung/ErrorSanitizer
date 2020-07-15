@@ -45,8 +45,8 @@ static EVP_CIPHER_CTX *real_EVP_CIPHER_CTX_new(void)
 	if (NULL != EVP_CIPHER_CTX_new_func_ptr)
 		return (*EVP_CIPHER_CTX_new_func_ptr)();
 
-	log("Error in dlsym - in 'EVP_CIPHER_CTX_new' wrapper\n");
-	exit(-1);
+	exit_failure(ESAN_DLSYM_ERROR,
+		     "Error in dlsym - in 'EVP_CIPHER_CTX_new' wrapper\n");
 }
 
 // parameter names starting with __ are reserved for standard library
@@ -81,8 +81,8 @@ static EVP_MD_CTX *real_EVP_MD_CTX_create(void)
 	if (NULL != EVP_MD_CTX_create_func_ptr)
 		return (*EVP_MD_CTX_create_func_ptr)();
 
-	ESAN_ERROR("Error in dlsym - in 'EVP_MD_CTX_create' wrapper\n");
-	exit(-1);
+	exit_failure(ESAN_DLSYM_ERROR,
+		     "Error in dlsym - in 'EVP_MD_CTX_create' wrapper\n");
 }
 
 // parameter names starting with __ are reserved for standard library

@@ -46,8 +46,8 @@ static {func_return_value} real_{func_name}{func_full_params}
     if (NULL != {func_name}_func_ptr)
         return (*{func_name}_func_ptr){func_name_params};
 
-    log("Error in dlsym - in '{func_name}' wrapper\\n");
-    exit(-1);
+    exit_failure(ESAN_DLSYM_ERROR, "Error in dlsym - in '{func_name}' wrapper\\n");
+}
 }}
 
 {func_return_value} {func_name}{func_full_params}
