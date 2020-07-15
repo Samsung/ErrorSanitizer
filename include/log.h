@@ -20,6 +20,7 @@
 #define ESAN_LOG_H
 
 #include <stdio.h>
+#include <stdlib.h>
 
 enum ESAN_ERROR_CODE_E {
 	ESAN_SUCCESS = 0,
