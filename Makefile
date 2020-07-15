@@ -83,11 +83,18 @@ coverage:
 	CFLAGS_LOCAL="$(CFLAGS_LOCAL)" LDFLAGS_LOCAL="$(LDFLAGS_LOCAL)" $(MAKE) run
 	gcovr -r "${ESAN_PATH}" --delete --print-summary
 	find -type f -regex '.*\(gcno\|gcda\)$$' -delete
+
+coverage_debug:
+	CFLAGS_LOCAL="$(CFLAGS_LOCAL) -DDEBUG" LDFLAGS_LOCAL="$(LDFLAGS_LOCAL)" make coverage
+
 coverage_html:
 	CFLAGS_LOCAL="$(CFLAGS_LOCAL)" LDFLAGS_LOCAL="$(LDFLAGS_LOCAL)" $(MAKE) coverage_compile
 	CFLAGS_LOCAL="$(CFLAGS_LOCAL)" LDFLAGS_LOCAL="$(LDFLAGS_LOCAL)" $(MAKE) run
 	gcovr -r "${ESAN_PATH}" --delete --print-summary --html --html-details -o coverage.html
 	find -type f -regex '.*\(gcno\|gcda\)$$' -delete
+
+coverage_html_debug:
+	CFLAGS_LOCAL="$(CFLAGS_LOCAL) -DDEBUG" LDFLAGS_LOCAL="$(LDFLAGS_LOCAL)" make coverage_html
 
 error_sanitizer_preload.so: $(HOOK_OBJ) ${PRELOAD_SRC}
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) -shared -ldl
