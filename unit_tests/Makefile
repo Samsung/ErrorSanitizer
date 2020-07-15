@@ -44,11 +44,21 @@ clean:
 
 clean_test_files:
 	rm -f *.cur_input
+	rm -f *.esn_input
 
 ############################################################################
 
 %.elf: %.c
 	$(CC) -o $@ $< $(CFLAGS) $(LDFLAGS)
+
+test_fail_status.elf: test_fail_status.c ${ESAN_LIB}
+	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
+
+test_fail_status.txt: test_fail_status.elf ${ESAN_LIB}
+	echo "Executing: $< test."
+	cp esan_always_succeed.map "$<.cur_input"
+	LD_PRELOAD=${ESAN_LIB} ./$< "$<.cur_input"
+	rm -f "$<.cur_input"
 
 test_empty_map.txt: test_empty_map.elf ${ESAN_LIB}
 	echo "Executing: $< test."
