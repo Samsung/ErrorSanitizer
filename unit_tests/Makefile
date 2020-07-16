@@ -13,6 +13,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 #
+# Author: Ernest Borowski <e.borowski@samsung.com>
 # Author: Mateusz Nosek <m.nosek@samsung.com>
 #
 ifeq (${ESAN_PATH},)
@@ -99,9 +100,9 @@ sigaction_test_hook.so: sigaction_test_hook.c
 neg_test_sigaction.txt: test_empty_map.elf sigaction_test_hook.so
 	cp esan_always_succeed.map "$<.cur_input"
 	SIGACTION_FAIL=0 LD_PRELOAD=./$(word 2, $^):${ESAN_PATH}/error_sanitizer_preload.so ./$< "$<.cur_input" 2>&1 \
-	| grep -x "esan_signal.c | esan_signal_initialize:56 | Unable to set signal handlers!"
+	| grep -x "esan_signal.c | esan_signal_initialize:5[5-6] | Unable to set signal handlers!"
 	SIGACTION_FAIL=1 LD_PRELOAD=./$(word 2, $^):${ESAN_PATH}/error_sanitizer_preload.so ./$< "$<.cur_input" 2>&1 \
-	| grep -x "esan_signal.c | esan_signal_initialize:56 | Unable to set signal handlers!"
+	| grep -x "esan_signal.c | esan_signal_initialize:5[5-6] | Unable to set signal handlers!"
 	SIGACTION_FAIL=2 LD_PRELOAD=./$(word 2, $^):${ESAN_PATH}/error_sanitizer_preload.so ./$< "$<.cur_input" 2>&1 \
-	| grep -x "esan_signal.c | esan_signal_destructor:67 | Unable to restore signal handlers!"
+	| grep -x "esan_signal.c | esan_signal_destructor:6[6-7] | Unable to restore signal handlers!"
 	rm -f "$<.cur_input"
