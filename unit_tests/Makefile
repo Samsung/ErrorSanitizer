@@ -54,7 +54,7 @@ test_empty_map.txt: test_empty_map.elf ${ESAN_LIB}
 	echo "Executing: $< test."
 	touch "esan_empty.map.$<.cur_input"
 	LD_PRELOAD=${ESAN_LIB} ./$< "esan_empty.map.$<.cur_input" 2>&1 \
-	| grep -qE '^error_sanitizer\.c \| parse_map:3(12|15) \| Unable to read input data\. bitmap size: 0$$'
+	| grep -qE '^error_sanitizer\.c \| parse_map:3(14|17) \| Unable to read input data\. bitmap size: 0$$'
 	rm -f "esan_empty.map.$<.cur_input"
 
 test_SIG%.txt: test_SIG%.elf ${ESAN_LIB}

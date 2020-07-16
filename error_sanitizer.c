@@ -159,7 +159,7 @@ static char *read_data_from_file(size_t *ptr_data_size,
 static char *read_data_from_stdio(size_t *map_data_size)
 {
 	size_t stdin_it = SPLIT_STRING_SIZE, buff_size = MAX_LINE_LENGTH;
-	char *buff = malloc(MAX_LINE_LENGTH);
+	char *buff = malloc(MAX_LINE_LENGTH), *tmp_buff;
 	if (!buff) {
 		log("Unable to alocate memory for AFL input buffer.");
 		return NULL;
@@ -183,11 +183,13 @@ static char *read_data_from_stdio(size_t *map_data_size)
 		++stdin_it;
 		if (stdin_it >= buff_size) {
 			buff_size *= 2;
-			if (!(buff = realloc(buff, buff_size))) {
+			tmp_buff = realloc(buff, buff_size);
+			if (!tmp_buff) {
 				log("Unable to reallocate memory for AFL input buffer.");
 				free(buff);
 				return NULL;
 			}
+			buff = tmp_buff;
 		}
 	}
 	log("Bitmap does not contain magic value:\"%s\".", SPLIT_STRING);
