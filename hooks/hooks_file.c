@@ -102,11 +102,10 @@ long ftell(FILE *stream)
 	} else {
 		off_t off_t_result = real_ftello(stream);
 		long long_result = real_ftell(stream);
-		if (off_t_result != (off_t)long_result) {
-			log("File size overflow when using ftell() - use ftello() "
-			    "instead! (See: FIO19-C)");
-			exit(-1);
-		}
+		if (off_t_result != (off_t)long_result)
+			exit_failure(
+				ESAN_DEPRECATED,
+				"File size overflow when using ftell() - use ftello() instead! (See: FIO19-C)");
 		return long_result;
 	}
 }
@@ -171,10 +170,9 @@ static void real_rewind(FILE *stream)
 void rewind(FILE *stream)
 {
 	if (esan_should_I_fail(__builtin_return_address(0), ESAN_REWIND)) {
-		log("%s is obsolete function - see SEI CERT C Coding Standard "
-		    "MSC24-C for details!",
-		    "rewind");
-		exit(-3);
+		exit_failure(
+			ESAN_DEPRECATED,
+			"Rewind is obsolete function - see SEI CERT C Coding Standard MSC24-C for details!");
 	} else {
 		real_rewind(stream);
 	}

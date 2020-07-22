@@ -1,4 +1,4 @@
-hooks_file.c | fclose:139 | Fake closing stderr file stream.
+hooks_file.c | fclose:138 | Fake closing stderr file stream.
 
 Error Sanitizer stats
 --------------------|----------|-----------------
